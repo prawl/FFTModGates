@@ -23,6 +23,12 @@ gate lives in docs/RELEASE_SCOPE.md.
 
 ## Backlog
 
+- [MG-21] 2026-11-03: Ratchet the number of repeated lines, not their share of all code, so
+  deleting unique code can never make the duplication floor refuse a build. Found swapping Color
+  Customizer onto the shared logger: removing five logger files raised the share from 3.13% to
+  3.19% with no repeated line added, and the owner had to widen under CC-50. (Tech: health.py
+  duplicated_share returns a ratio; keep it for the report and judge a duplicated_lines count in
+  the ratchet, with the first floor after the change setting that bar.)
 - [MG-5] 2026-11-02: Let the style contract's em dash ban take a per-repo scope list, since data
   files hold design notes with em dashes that are not game text.
 - [MG-6] 2026-11-02: Have the shared setup's /gates status print the rulebook version a repo is
