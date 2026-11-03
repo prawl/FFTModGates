@@ -22,16 +22,6 @@ gate lives in docs/RELEASE_SCOPE.md.
   - Verify: in a scratch repo on the rulebook, a commit that shrinks a file lands with the
     updated rows staged and the ratchet green right after; a commit that widens a row is
     refused with the row to paste; Check.ps1 green here.
-- **[MG-23] Make every count freezing refusal name its baseline and the command that moves it** (opened 2026-11-03) [QUEUED]
-  - Done means: when a test that freezes a count goes red, its message says which file holds
-    the number and how to move it, so the fix and the baseline land in one edit instead of
-    three reruns. The README lists the same in one table. (Tech: the comment budget, silent
-    catch, doc width and comment width tests; files.json moved by health.py floor --write,
-    style.json hand written under docs/health, warnings.json written by the gate and raised
-    by hand with a card.)
-  - Verify: each named test's failure text carries its baseline path and command, pinned by
-    a test that reads the message builders; the README table lists every baseline the
-    rulebook freezes; Check.ps1 green.
 - **[MG-17] Let a repo opt its Python into the health and comment rules** (opened 2026-11-03) [QUEUED]
   - Done means: a mod written in Python can be held to the same rules as a C# mod, with the
     200 line gate, the comment budget, the silent catch and long function counts and the
@@ -45,19 +35,38 @@ gate lives in docs/RELEASE_SCOPE.md.
     is refused by the ratchet; selftest cases cover a Python function over 60 code lines, a
     silent except and the folder day one rule; Offensive Chemist's tree measured from here
     reports rows for every file under its tools; Check.ps1 green.
+- **[MG-18] Let Now go empty** (opened 2026-11-03) [QUEUED]
+  - Done means: shipping the last card in Now no longer fails the ledger test, so the owner is
+    not made to invent a next card at every last exit. The owner ruled so on 2026-11-03 after
+    the reason behind the refusal turned out to be written nowhere. The cap of five and every
+    other rule stay. (Tech: the NotEmpty assertion in TodoContractTests goes, and so does the
+    "Now never goes empty" sentence in the global CLAUDE.md; every repo on the rulebook takes
+    the change at its next subtree pull.)
+  - Verify: a scratch ledger with an empty Now passes the ledger test; this repo's own test run
+    is green; the global CLAUDE.md no longer carries the sentence.
+- **[MG-5] Let the em dash ban take a per-repo scope list** (opened 2026-11-02) [QUEUED]
+  - Done means: a repo can name the folders and files where an em dash is banned, so the ban
+    reaches its code and docs without reaching data files whose design notes are not game
+    text. A repo that lists nothing is not scanned, by the owner's ruling of 2026-11-03. This
+    repo lists its own folders. (Tech: rules.json emDashScope, a list of paths; a new style
+    contract test walks them and names each line; the README key table gains the row.)
+  - Verify: a planted em dash in a listed folder fails the test with its file and line; one in
+    an unlisted folder passes; Check.ps1 green here with the scope set.
+- **[MG-6] Show the rulebook version on the /gates screen** (opened 2026-11-02) [QUEUED]
+  - Done means: one screen shows both the session gates and the build gates, with the rulebook
+    version a repo is on, where its build gates run, and whether the pre-commit rows step and
+    the style scan hook are live there. (Tech: a rulebook row in the shared setup's gates.py,
+    read from gates/VERSION in a mod or VERSION in the rulebook repo, plus the SessionStart
+    brief line; tests in test_gates.py.)
+  - Verify: /gates in a mod on the rulebook names its version; in a repo off the rulebook the
+    row says so; the brief line at session start carries the version; test_gates.py green.
 
 ## Backlog
 
-- [MG-18] 2026-11-03: Decide whether the ledger may let Now go empty, since the owner finds the
-  refusal at every last exit annoying and the reason behind it is not written down anywhere; the
-  rule has been in the ledger test since its first day (Living Weapons f338eb84, 2026-07-05) and
-  reads as a forcing function, so each exit also names what comes next. (Tech: the NotEmpty
-  assertion in TodoContractTests and the "Now never goes empty" line in the global CLAUDE.md; a
-  change here lands in every repo on the rulebook at its next subtree pull.)
-- [MG-5] 2026-11-02: Let the style contract's em dash ban take a per-repo scope list, since data
-  files hold design notes with em dashes that are not game text.
-- [MG-6] 2026-11-02: Have the shared setup's /gates status print the rulebook version a repo is
-  on, so one screen shows both the session gates and the build gates.
+- [MG-24] 2026-11-03: Move the four mods onto rulebook v0.2.0 and fill their rows in the README's
+  Who is on it table, with Offensive Chemist opting its tools Python into the health gate on the
+  way, so every mod runs the same rules again. (Tech: git subtree pull at v0.2.0 in each mod;
+  Offensive Chemist adds pythonProd to its rules.json and Invoke-HealthGate to its pipeline.)
 
 ## Walled (blocked by engine / external)
 

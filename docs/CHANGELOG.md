@@ -8,6 +8,14 @@ with a date and no hash.
 
 ## 0.2 cycle
 
+- [MG-23] SHIPPED b6321a6 2026-11-03: When a test that freezes a count goes red, its message
+  now says which file holds the number and what moves it, so the fix and the baseline land in
+  one edit instead of three reruns. The README lists every frozen baseline in one table. From
+  the second handoff feedback in the private mod, where three baselines went red one at a
+  time after one patch. (Tech: FileRows.WriteHint and WidenHint name files.json and health.py
+  floor --write; StyleContractTests.FreezeHint names style.json as hand written; the comment
+  budget, silent catch, doc width and comment width messages carry them, pinned by a test
+  that reads the builders.)
 - [MG-22] SHIPPED 35e2059 2026-11-03: A session now sees a bad comment or a layout slip right
   after writing it, instead of seven minutes later when the full gate goes red. One Python
   script under tools answers the comment and style rules in a quarter second, on the whole

@@ -142,7 +142,11 @@ Everything below is one commit. No gameplay code moves.
    `python gates/tools/health.py floor --write`. It writes `docs/health/floor.json`, the totals,
    and `docs/health/files.json`, one row per production file. From then on a build with no
    committed floor is refused, not warned about. Release records the repo wrote before that day
-   stay in its trend and never set a bar; the first floor is the line in the sand.
+   stay in its trend and never set a bar; the first floor is the line in the sand. From then on
+   the shared pre-commit (`install_git_hooks.sh <repo>` from the setup repo) runs the same
+   command for every commit that touches production code and stages the two files, so a
+   shrink, a new file or a gone file never reaches the ratchet unrecorded. A floor that would be
+   worse refuses the commit with the row to paste, since widening stays the owner's call.
 
 ## The per-file rule
 
@@ -157,9 +161,10 @@ file to its row on every build.
   new file.
 - The parts of a `partial` type are summed under one row named `partial <Type>`, so splitting a
   file without a real seam changes nothing.
-- When a file shrinks, or is new, or is gone, the row must follow before a build passes. Run
-  `python gates/tools/health.py floor --write` and commit `files.json` with the change. The
-  comment budget test reads the same rows, so `dotnet test` says the same thing earlier.
+- When a file shrinks, or is new, or is gone, the row must follow before a build passes. The
+  shared pre-commit writes it into the commit for you; by hand it is
+  `python gates/tools/health.py floor --write`, committed with the change. The comment budget
+  test reads the same rows, so `dotnet test` says the same thing earlier.
 - Widening a row or a total is the owner's call. Every refusal ends with a Backlog row to paste
   that names the rule it wanted to bend and why, under the next free ledger id. The owner then
   runs `floor --write --allow-worse --card <id>` citing that row. The records remember the card,
@@ -208,8 +213,10 @@ contracts, because each one checks that mod's own files.
 
 ## Working on this repo
 
-`.\Check.ps1` runs every gate here, under Windows PowerShell 5.1 and PowerShell 7 in CI. Run
-`python tools/manifest.py write` before committing; a stale list fails the check. The ledger is
-`docs/TODO.md` and `docs/CHANGELOG.md` with the MG id prefix. `python tools/style_scan.py` answers
-the comment and style rules in a second, on the whole repo or on the files named; the shared setup
-runs it after every edit, so a slip shows before the gate does.
+`.\Check.ps1` runs every gate here, under Windows PowerShell 5.1 and PowerShell 7 in CI. The
+shared pre-commit rewrites `MANIFEST.sha256` on every commit here; without the shim, run
+`python tools/manifest.py write` before committing, since a stale list fails the check. The
+ledger is `docs/TODO.md` and `docs/CHANGELOG.md` with the MG id prefix.
+`python tools/style_scan.py` answers the comment and style rules in a second, on the whole repo
+or on the files named; the shared setup runs it after every edit, so a slip shows before the
+gate does.
