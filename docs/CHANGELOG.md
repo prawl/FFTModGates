@@ -8,6 +8,15 @@ with a date and no hash.
 
 ## 0.2 cycle
 
+- [MG-24] SHIPPED 733d72b 2026-11-03: The four mods now run rulebook v0.2.0 and the README table
+  says so with each hookup commit. Each took the tag with a subtree pull from the local rulebook
+  and got the shared pre-commit shim, so the rows step and the scanner hook are live there; two
+  stale attribution guards were kept beside the shim as pre-commit.before. Every shared gate ran
+  green on the new rules in all four; Living Weapons needed a second run after one of its own
+  tests left an lw_cfg folder behind once, a leak the rulebook did not change. (Tech: git
+  subtree pull --prefix gates from the local path at v0.2.0 with --squash; install_git_hooks.sh
+  in each; Color Customizer pulled through a scratch worktree and a fast forward around its
+  dirty tree.)
 - [MG-5] SHIPPED 5a6096f 2026-11-03: A repo can now say where its em dash ban applies, so the
   ban reaches its code and docs without reaching data files whose design notes are not game
   text. A repo that lists nothing is not scanned, by the owner's ruling of 2026-11-03; this

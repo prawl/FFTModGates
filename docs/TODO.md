@@ -12,10 +12,6 @@ gate lives in docs/RELEASE_SCOPE.md.
 
 ## Backlog
 
-- [MG-24] 2026-11-03: Move the four mods onto rulebook v0.2.0 and fill their rows in the README's
-  Who is on it table, so every mod runs the same rules again. (Tech: git subtree pull at v0.2.0
-  in each mod, from the local rulebook until the tag is pushed; the shared pre-commit shim
-  installed in each, replacing two stale attribution guards kept as pre-commit.before.)
 - [MG-26] 2026-11-03: Opt Offensive Chemist's tools Python into the health gate, since its
   pipeline still skips that gate and its tools would go red the day it lists them, with
   thirteen comment lines holding a colon or a dash, one 284 character opening docstring
