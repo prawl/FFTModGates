@@ -8,8 +8,8 @@ from those records every time, so never edit it by hand.
 
 What it measures:
   * Snapshot: production and test size, test-to-production ratio, comment share, silent (empty)
-    catches, methods over 60 code lines, production files over 200 code lines, and duplicated
-    8-line blocks.
+    catches, methods over 60 code lines, production files over 200 code lines, and the lines
+    sitting in repeated 8-line blocks, as a count and as a share of all code.
   * Cycle: commits that touched production code, how many read like a repair (called fix-shaped, the
     subject starts with Stop, Fix, Restore, Correct, Guard, Re-anchor... or says bug, crash, wrong,
     no longer), hotspots (cycle commits times branch points), and fix rate per domain folder.
@@ -24,11 +24,12 @@ How it runs, so nobody has to remember it:
     quiet while a version is in development and prints a warning box when a tagged release has no
     record, or when a record is written but not committed.
   * The same gate calls `ratchet` on every build: the working tree's snapshot against the best
-    committed record. Silent catches, long methods, long files and repeated code may not rise, and
-    the test ratio may not fall; a build that makes one of them worse is refused, the same as a red
-    test. A row the newest record does not hold yet is not judged until a release writes it. The
-    bar is read from the last commit, never from the working copy, and `--base` adds a second ref
-    (the main branch, or the commit a push started from) so an edit to the memory cannot lower it.
+    committed record. Silent catches, long methods, long files and the count of repeated lines may
+    not rise, and the test ratio may not fall; a build that makes one of them worse is refused, the
+    same as a red test. A row the newest record does not hold yet is not judged until a release
+    writes it. The bar is read from the last commit, never from the working copy, and `--base`
+    adds a second ref (the main branch, or the commit a push started from) so an edit to the
+    memory cannot lower it.
     A repo with no committed memory is refused until its first floor is committed.
   * `floor` snapshots the working tree between releases, so an improvement holds from the day it
     lands. A floor only moves the good way. The first floor is the day the repo took the rules,
@@ -234,8 +235,8 @@ def method_lengths(text):
     return out
 
 
-def duplicated_share(texts):
-    """Share of code lines sitting inside an 8-line block that appears more than once."""
+def duplicated_lines(texts):
+    """(lines inside an 8-line block that appears more than once, code lines in all)."""
     windows = collections.defaultdict(list)
     norm = {}
     for path, text in texts.items():
@@ -249,8 +250,14 @@ def duplicated_share(texts):
         if len(spots) > 1:
             for path, k in spots:
                 dup.update((path, k + t) for t in range(DUP_WINDOW))
-    total = sum(len(r) for r in norm.values())
-    return (len(dup) / total) if total else 0.0
+    return len(dup), sum(len(r) for r in norm.values())
+
+
+def duplicated_share(texts):
+    """The repeated lines as a share of all code lines, for the report. The ratchet judges the
+    count, since deleting unique code raises the share with no repeated line added."""
+    dup, total = duplicated_lines(texts)
+    return (dup / total) if total else 0.0
 
 
 def domain_of(path):
@@ -287,6 +294,7 @@ def snapshot(files):
         "long_methods": sum(1 for n in methods if n > LONG_METHOD),
         "long_files": sum(1 for t in prod.values() if len(code_lines(t)) > LONG_FILE),
         "duplication": round(duplicated_share(prod), 4),
+        "duplicated_lines": duplicated_lines(prod)[0],
     }
 
 
@@ -426,6 +434,7 @@ SNAPSHOT_ROWS = [
     ("Methods over %d code lines" % LONG_METHOD, "long_methods", num, num, True),
     ("Production files over %d code lines" % LONG_FILE, "long_files", num, num, True),
     ("Code in repeated 8-line blocks", "duplication", lambda x: pct(x, 1), lambda x: points(x, 1), True),
+    ("Lines in repeated 8-line blocks", "duplicated_lines", num, num, True),
 ]
 
 # A patch release of a commit or two says nothing about fix rate, so "last cycle" means the most
@@ -587,7 +596,7 @@ RATCHET_ROWS = [
     ("empty_catches", "silent (empty) catches", True),
     ("long_methods", "methods over %d code lines" % LONG_METHOD, True),
     ("long_files", "production files over %d code lines" % LONG_FILE, True),
-    ("duplication", "code in repeated 8-line blocks", True),
+    ("duplicated_lines", "lines in repeated 8-line blocks", True),
     ("test_ratio", "test lines per production line", False),
 ]
 
@@ -1060,6 +1069,12 @@ def selftest():
     check("comments do not make a file long", snapshot({PROD + "A.cs": "// a\n" * 300 + "int a;\n"})["long_files"] == 0)
     check("repeated block found", duplicated_share({"a.cs": block, "b.cs": block}) == 1.0)
     check("unique code not repeated", duplicated_share({"a.cs": block, "b.cs": block.replace("int", "long")}) == 0.0)
+    unique = "".join("var u%d = Make(%d);\n" % (i, i) for i in range(20))
+    with_unique = snapshot({PROD + "a.cs": block, PROD + "b.cs": block, PROD + "c.cs": unique})
+    without = snapshot({PROD + "a.cs": block, PROD + "b.cs": block})
+    check("the repeated line count is what the ratchet judges",
+          with_unique["duplicated_lines"] == 20 and without["duplicated_lines"] == 20 and without["duplication"] > with_unique["duplication"])
+    check("deleting unique code cannot make the duplication ratchet refuse", not ratchet_problems(with_unique, without))
     global DEV_DEFINE
     check("nothing is dev only when the repo names no dev define", not dev_only("#if MODDEV\nusing System;\n"))
     DEV_DEFINE = "MODDEV"
@@ -1108,11 +1123,11 @@ def selftest():
     check("a tiny patch cycle is skipped for comparison", comparable([rec, tiny, old], 0) is old)
     check("share changes read in points", change(0.24, 0.38, points, None) == "down 14 pts")
     check("a change below display precision reads same", change(0.0080, 0.0083, lambda x: points(x, 1), True) == "same")
-    base = {"empty_catches": 2, "long_methods": 1, "long_files": 0, "duplication": 0.01, "test_ratio": 1.5}
+    base = {"empty_catches": 2, "long_methods": 1, "long_files": 0, "duplicated_lines": 16, "test_ratio": 1.5}
     check("ratchet quiet when nothing is worse", not ratchet_problems(base, dict(base, empty_catches=1, test_ratio=1.6)))
     check("ratchet flags a new silent catch", any("silent" in p for p in ratchet_problems(base, dict(base, empty_catches=3))))
     check("ratchet flags a falling test ratio", any("test lines" in p for p in ratchet_problems(base, dict(base, test_ratio=1.4))))
-    check("ratchet flags more repeated code", any("repeated" in p for p in ratchet_problems(base, dict(base, duplication=0.02))))
+    check("ratchet flags more repeated code", any("repeated" in p for p in ratchet_problems(base, dict(base, duplicated_lines=24))))
     check("ratchet flags a new long file", any("files over" in p for p in ratchet_problems(base, dict(base, long_files=1))))
     older = {k: v for k, v in base.items() if k != "long_files"}
     check("ratchet skips a row the base record does not hold", not ratchet_problems(older, dict(base, long_files=5)))
