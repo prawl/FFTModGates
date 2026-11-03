@@ -10,16 +10,6 @@ gate lives in docs/RELEASE_SCOPE.md.
 
 ## Now (release: 0.1)
 
-- **[MG-3] Every health number becomes a per-file row that can only shrink** (opened 2026-11-02) [BUILDING]
-  - Done means: fixing one long method and adding another no longer nets to zero, because
-    every production file has its own row of comment lines, longest block, code lines, empty
-    catches and long methods, and a row may only go down. A new file has no row and meets the
-    full rule, including no more than 200 code lines, and partial class parts count as one file
-    so a split without a real seam cannot pass. A shrink must be committed, not just printed.
-    (Tech: one baseline json per repo written by health.py and read by the comment budget test;
-    zero growth allowance; floor.json totals stay as the report; the global rule text follows.)
-  - Verify: in a scratch copy, growing a file's comments by one line fails, shrinking one and
-    not committing the row fails, and a partial split of a 300 line class fails as one file.
 - **[MG-13] A refused gate asks for a confession row, and only a cited row can widen a rule** (opened 2026-11-02) [BUILDING]
   - Done means: when a gate says no, its message tells you to paste a Backlog row that names the
     rule it wanted to bend and why, with the repo's own prefix, and the gate stays red until the
@@ -31,13 +21,16 @@ gate lives in docs/RELEASE_SCOPE.md.
   - Verify: in a scratch copy, floor --allow-worse without --card is refused, with an id that is
     not in TODO.md is refused, and with a real id writes the records naming it; the ratchet then
     passes against a base ref that still holds the lower value.
+- **[MG-11] Pin what a mod takes to a tagged version** (opened 2026-11-02) [QUEUED]
+  - Done means: a mod vendors the rulebook at a tag, never at whatever main holds today, so two
+    mods on one tag run the same rules and a change here reaches a mod only when it pulls the
+    next tag. (Tech: tag v0.1.0 once Treasure Master runs green on it, the README's subtree lines
+    name the tag; CI already runs Check.ps1 under both PowerShells since 6276a6f.)
+  - Verify: a fresh Treasure Master clone takes the tag with git subtree add, builds, passes its
+    own check, and gates/VERSION prints the number the tag carries.
 
 ## Backlog
 
-- [MG-11] 2026-11-02: Pin what a mod takes to a tagged version and prove the gates under both
-  PowerShells, since local runs use 5.1 and CI used only 7. (Tech: tag v0.1.0 when Treasure
-  Master is green, README pulls the tag; CI runs Check.ps1 under shell powershell and pwsh since
-  6276a6f.)
 - [MG-5] 2026-11-02: Let the style contract's em dash ban take a per-repo scope list, since data
   files hold design notes with em dashes that are not game text.
 - [MG-6] 2026-11-02: Have the shared setup's /gates status print the rulebook version a repo is

@@ -39,6 +39,10 @@ How it runs, so nobody has to remember it:
     debt as its row, which only shrinks. A file with no row is new (a rename counts as new) and
     meets the full rule. The parts of a partial type are summed under one row, so a split with no
     real seam cannot pass. A row the tree has moved below must be committed before a build passes.
+  * A refusal ends with the Backlog row to paste, under the next free ledger id, naming the rule it
+    wanted to bend and why. `floor --write --allow-worse --card <id>` is the owner's override and
+    needs that row in docs/TODO.md. The records store which key was widened under which card, and
+    the ratchet judges a widened key at HEAD alone, so the override survives the base ref.
 
 Where things are comes from rules.json at the repo root (prod, tests, modConfig, devDefine,
 healthDir, healthMd, ticketPrefix). The repo root is the first folder above this script that holds
@@ -51,6 +55,7 @@ Usage:
   python gates/tools/health.py status [--committed] [--strict]    # the reminder; --strict exits 1
   python gates/tools/health.py ratchet                            # exit 1 when the working tree is worse than the best record
   python gates/tools/health.py floor --write                      # record today's numbers as the floor and the file rows
+  python gates/tools/health.py floor --write --allow-worse --card MG-15   # the owner widens a rule, citing its row
   python gates/tools/health.py --selftest
 """
 import argparse
@@ -669,16 +674,20 @@ def rows_of(rec):
     return {k: dict(zip(cols, v)) for k, v in rec.get("files", {}).items()}
 
 
-def load_rows(ref=None):
-    """The file rows from the working tree, or from a git ref; an empty dict when there is no record."""
+def load_files_record(ref=None):
+    """The files record from the working tree, or from a git ref; None when there is no record."""
     if ref is None:
         path = os.path.join(REPO, HEALTH_DIR, FILES_FILE)
         if not os.path.isfile(path):
-            return {}
+            return None
         with open(path, encoding="utf-8") as h:
-            return rows_of(json.load(h))
+            return json.load(h)
     text = read_at(ref, HEALTH_DIR + "/" + FILES_FILE)
-    return rows_of(json.loads(text)) if text else {}
+    return json.loads(text) if text else None
+
+
+def load_rows(ref=None):
+    return rows_of(load_files_record(ref))
 
 
 def best_rows(records):
@@ -703,25 +712,29 @@ def describe(key, members):
     return "%s (%s)" % (key, ", ".join(files)) if files and (len(files) > 1 or files[0] != key) else key
 
 
-def file_problems(now, base, members=None):
-    """The files over their row, or new and over the rule, as sentences."""
+def file_faults(now, base, members=None):
+    """The files over their row, or new and over the rule, as (key, sentence)."""
     out = []
     for key in sorted(now):
         row, name = now[key], describe(key, members)
         if key in base:
             for col in FILE_COLUMNS:
                 if col in base[key] and row[col] > row_limit(col, base[key]):
-                    out.append("%s has %d %s, its row allows %d" % (name, row[col], FILE_LABELS[col], row_limit(col, base[key])))
+                    out.append((key, "%s has %d %s, its row allows %d" % (name, row[col], FILE_LABELS[col], row_limit(col, base[key]))))
             continue
         tag = "%s is new, or renamed, which counts as new, and" % name
         if row["code"] and row["comments"] / row["code"] > NEW_COMMENT_SHARE:
-            out.append("%s has %d comment lines over %d code lines, the rule is one in three" % (tag, row["comments"], row["code"]))
+            out.append((key, "%s has %d comment lines over %d code lines, the rule is one in three" % (tag, row["comments"], row["code"])))
         if row["block"] > NEW_BLOCK:
-            out.append("%s has a comment block of %d lines, the rule is %d" % (tag, row["block"], NEW_BLOCK))
+            out.append((key, "%s has a comment block of %d lines, the rule is %d" % (tag, row["block"], NEW_BLOCK)))
         for col in ("code", "catches", "long_methods"):
             if row[col] > FILE_LINES[col]:
-                out.append("%s has %d %s, the rule is %d" % (tag, row[col], FILE_LABELS[col], FILE_LINES[col]))
+                out.append((key, "%s has %d %s, the rule is %d" % (tag, row[col], FILE_LABELS[col], FILE_LINES[col])))
     return out
+
+
+def file_problems(now, base, members=None):
+    return [s for _, s in file_faults(now, base, members)]
 
 
 def rows_to_commit(now, head, members=None):
@@ -771,8 +784,8 @@ def best_base(records, floor):
     return base, origin
 
 
-def ratchet_problems(base, now, origin=None):
-    """The rows where now is worse than base, as sentences."""
+def ratchet_faults(base, now, origin=None):
+    """The rows where now is worse than base, as (key, sentence)."""
     out = []
     for key, label, better_low in RATCHET_ROWS:
         b, n = base.get(key), now.get(key)
@@ -782,8 +795,67 @@ def ratchet_problems(base, now, origin=None):
             continue
         worse = n > b if better_low else n < b
         if worse:
-            out.append("%s: %s, was %s%s" % (label, n, b, " in %s" % origin[key] if origin and key in origin else ""))
+            out.append((key, "%s: %s, was %s%s" % (label, n, b, " in %s" % origin[key] if origin and key in origin else "")))
     return out
+
+
+def ratchet_problems(base, now, origin=None):
+    return [s for _, s in ratchet_faults(base, now, origin)]
+
+
+TODO_FILE = "docs/TODO.md"
+CHANGELOG_FILE = "docs/CHANGELOG.md"
+
+
+def ledger_text(name, ref=None):
+    """A ledger file's text from the working tree, or from a git ref; empty when absent."""
+    if ref is not None:
+        return read_at(ref, name) or ""
+    path = os.path.join(REPO, name)
+    if not os.path.isfile(path):
+        return ""
+    with open(path, encoding="utf-8-sig") as h:
+        return h.read()
+
+
+def has_card(text, card):
+    """True when the card is a row of the ledger, bold or not, so an override always points at a paper trail."""
+    return bool(re.search(r"^\s*-\s*(\*\*)?\[%s\]" % re.escape(card), text, re.M))
+
+
+def next_id(text, prefix):
+    """The next free ledger id after every one the text holds."""
+    ids = [int(n) for n in re.findall(r"\[%s-(\d+)\]" % re.escape(prefix), text)]
+    return "%s-%d" % (prefix, max(ids) + 1 if ids else 1)
+
+
+def confession():
+    """The lines every refusal ends with: the row to paste that names the bent rule, and the override that cites it."""
+    card = next_id(ledger_text(TODO_FILE) + ledger_text(CHANGELOG_FILE), TICKET_PREFIX)
+    return ["If the rule is wrong here, paste this row under Backlog in %s and say why:" % TODO_FILE,
+            "- [%s] %s: Wanted to bend <rule> for <file>, because <why>." % (card, time.strftime("%Y-%m-%d")),
+            "The owner then widens it with: python %s floor --write --allow-worse --card %s" % (SCRIPT, card)]
+
+
+def valid_allowances(rec, ref):
+    """The keys a record widened under a card that is a row of the ledger at ref, and a note per card that is not."""
+    allowed, notes = {}, []
+    todo = None
+    for key, card in (rec or {}).get("allowed", {}).items():
+        if todo is None:
+            todo = ledger_text(TODO_FILE, ref)
+        if has_card(todo, card):
+            allowed[key] = card
+        else:
+            notes.append("%s was widened under %s, which is not a row in %s at %s; the allowance is ignored." % (key, card, TODO_FILE, ref))
+    return allowed, notes
+
+
+def shield(records, floors, head_floor, allowed):
+    """Judge a widened key at HEAD's floor alone, so an owner override survives older records and the base ref."""
+    for rec in list(records) + [f for f in floors if f is not head_floor]:
+        for key in allowed:
+            rec["snapshot"].pop(key, None)
 
 
 def ratchet_memory(base_ref):
@@ -800,6 +872,10 @@ def ratchet_memory(base_ref):
             records += load_records(base_ref)
         else:
             notes.append("No floor readable at %s; judging against HEAD only." % base_ref)
+    if head_floor:
+        allowed, bad = valid_allowances(head_floor, "HEAD")
+        notes += bad
+        shield(records, floors, head_floor, allowed)
     if not records and not floors:
         working = load_floor()
         if working:
@@ -822,25 +898,36 @@ def cmd_ratchet(args):
     against = ", ".join(sorted(set(origin.values())))
     if problems:
         print(banner(["CODE HEALTH RATCHET: worse than the best committed value"] + problems
-                     + ["Fix the code, or write a new record on purpose and say why in the commit."], warn=True))
+                     + [WIDEN_HINT] + confession(), warn=True))
         return 1
     print("  -> Code health ratchet: no measure worse than the best committed value (%s)." % against)
     return ratchet_files(files, args.base)
 
 
+WIDEN_HINT = "Fix the code, or let the owner widen the rule with floor --write --allow-worse --card <id>."
+
+
 def ratchet_files(files, base_ref):
     """The per-file half of the ratchet. Every row is judged against the lowest committed value,
-    and a row the tree has moved below must be committed before the build passes."""
-    head = load_rows("HEAD")
-    committed = [head] + ([load_rows(base_ref)] if base_ref else [])
+    a row the owner widened at HEAD alone, and a row the tree has moved below must be committed
+    before the build passes."""
+    head_rec = load_files_record("HEAD")
+    head = rows_of(head_rec)
+    allowed, notes = valid_allowances(head_rec, "HEAD")
+    for note in notes:
+        print("  -> " + note)
+    others = [load_rows(base_ref)] if base_ref else []
+    for rows in others:
+        for key in allowed:
+            rows.pop(key, None)
+    committed = [head] + others
     now, members = file_rows({p: t for p, t in files.items() if p.startswith(PROD)})
     if not any(committed):
         print(banner(["CODE HEALTH RATCHET: no file rows committed yet", commit_hint()], warn=True))
         return 1
     over = file_problems(now, best_rows(committed), members)
     if over:
-        print(banner(["CODE HEALTH RATCHET: a file is over its row"] + over
-                     + ["Fix the code, or let the owner widen the row with floor --allow-worse and say why in the commit."], warn=True))
+        print(banner(["CODE HEALTH RATCHET: a file is over its row"] + over + [WIDEN_HINT] + confession(), warn=True))
         return 1
     pending = rows_to_commit(now, head, members)
     if pending:
@@ -855,9 +942,23 @@ def floor_rows(rec):
     return rows + ["%s: %s" % (label, rec["snapshot"].get(key)) for key, label, _ in RATCHET_ROWS]
 
 
-def floor_regressions(now, best, origin):
-    """The rows a new floor would set worse than the best on record; a floor only moves the good way."""
-    return ratchet_problems(best, now, origin)
+def floor_faults(now, per_file, members):
+    """What a new floor would set worse than the committed memory, and the allowances it carries forward.
+
+    Returns (faults, totals_allowed, files_allowed). A fault is (kind, key, sentence). A key the
+    owner widened stays widened under its card, a file row for as long as the file exists, since the
+    base ref may still hold the lower value; the widened floor is the bar, so it cannot creep. The
+    first rows are the line in the sand, so a file already over a line is taken as its debt."""
+    records, head_floor, head_files = load_records("HEAD"), load_floor("HEAD"), load_files_record("HEAD")
+    carried_totals = valid_allowances(head_floor, "HEAD")[0]
+    carried_files = {k: c for k, c in valid_allowances(head_files, "HEAD")[0].items() if k in per_file}
+    shield(records, [head_floor] if head_floor else [], head_floor, carried_totals)
+    best, origin = best_base(records, head_floor)
+    faults = [("total", k, s) for k, s in ratchet_faults(best, now, origin)]
+    head_rows = rows_of(head_files)
+    if head_rows:
+        faults += [("file", k, s) for k, s in file_faults(per_file, head_rows, members)]
+    return faults, dict(carried_totals), carried_files
 
 
 def cmd_floor(args):
@@ -868,22 +969,30 @@ def cmd_floor(args):
     rec = {"sha": sha, "date": time.strftime("%Y-%m-%d"), "dirty": dirty, "snapshot": snapshot(files)}
     per_file, members = file_rows({p: t for p, t in files.items() if p.startswith(PROD)})
     rows = floor_rows(rec)
-    best, origin = best_base(load_records("HEAD"), load_floor("HEAD"))
-    head_rows = load_rows("HEAD")
-    # The first rows are the line in the sand, so a file already over a line is taken as its debt.
-    worse = floor_regressions(rec["snapshot"], best, origin) + (file_problems(per_file, head_rows, members) if head_rows else [])
+    faults, allowed_totals, allowed_files = floor_faults(rec["snapshot"], per_file, members)
+    worse = [s for _, _, s in faults]
     if worse and not args.allow_worse:
-        print(banner(["CODE HEALTH FLOOR REFUSED: a floor only moves the good way"] + worse
-                     + ["Fix the code, or pass --allow-worse with the owner's say and name it in the commit."], warn=True))
+        print(banner(["CODE HEALTH FLOOR REFUSED: a floor only moves the good way"] + worse + [WIDEN_HINT] + confession(), warn=True))
         return 1
+    if worse and not (args.card and has_card(ledger_text(TODO_FILE), args.card)):
+        print(banner(["CODE HEALTH FLOOR REFUSED: --allow-worse needs --card <id>, a row of %s" % TODO_FILE] + confession(), warn=True))
+        return 1
+    for kind, key, _ in faults:
+        (allowed_totals if kind == "total" else allowed_files)[key] = args.card
     if worse:
         rec["allowed_worse"] = worse
-        rows.append("Allowed worse by the owner: " + "; ".join(worse))
+    if allowed_totals:
+        rec["allowed"] = allowed_totals
+    for name, allowed in (("totals", allowed_totals), ("file rows", allowed_files)):
+        if allowed:
+            rows.append("%s widened by the owner: %s" % (name, "; ".join("%s under %s" % kv for kv in sorted(allowed.items()))))
     debt = sorted(k for k, r in per_file.items() if any(FILE_LINES[c] is not None and r[c] > FILE_LINES[c] for c in FILE_COLUMNS))
     rows.append("file rows: %d, over the line: %s" % (len(per_file), ", ".join(debt) if debt else "none"))
     if args.write:
         os.makedirs(os.path.join(REPO, HEALTH_DIR), exist_ok=True)
         files_rec = dict({"sha": sha, "date": rec["date"]}, **rows_record(per_file))
+        if allowed_files:
+            files_rec["allowed"] = allowed_files
         with open(os.path.join(REPO, HEALTH_DIR, FLOOR_FILE), "w", encoding="utf-8", newline="\n") as h:
             json.dump(rec, h, indent=1)
             h.write("\n")
@@ -970,8 +1079,6 @@ def selftest():
     check("a floor on the base ref joins the base too and names where it came from", best3["long_methods"] == 0 and origin3["long_methods"] == "floor b2b2b2b on origin/main")
     check("a rise above the best value names where the best was set", any("in floor abc1234" in p for p in ratchet_problems(best2, dict(best2, empty_catches=2), origin2)))
     check("the floor banner names the commit and every ratchet row", floor_rows(floor)[0] == "CODE HEALTH FLOOR at abc1234" and len(floor_rows(floor)) == 1 + len(RATCHET_ROWS))
-    check("a floor that would be worse than the best on record is a regression, a better one is not",
-          floor_regressions(dict(best2, empty_catches=3), best2, origin2) and not floor_regressions(dict(best2, empty_catches=0), best2, origin2))
     tiny = json.loads(json.dumps(old))
     tiny["version"], tiny["cycle"]["prod_commits"], tiny["cycle"]["fix_share"] = "2.3.3", 1, 0.0
     check("a tiny patch cycle is skipped for comparison", comparable([rec, tiny, old], 0) is old)
@@ -1017,6 +1124,17 @@ def selftest():
     check("a files record round trips by column name", rows_of(rows_record(held)) == held and rows_of(None) == {})
     dumped = dump_rows(dict({"sha": "abc", "date": "2026-11-02"}, **rows_record(dict(held, **grow(comments=9)))))
     check("a files record is written one row per line", json.loads(dumped)["files"]["A.cs"] == [9, 4, 150, 1, 1] and '"A.cs": [9, 4, 150, 1, 1]' in dumped)
+    ledger = "## Now\n\n- **[ZZ-3] Title** (opened 2026-11-02) [BUILDING]\n\n## Backlog\n\n- [ZZ-11] 2026-11-02: a row, see [ZZ-5] too.\n"
+    check("a bold Now card and a Backlog row are cards, a mention in prose is not",
+          has_card(ledger, "ZZ-3") and has_card(ledger, "ZZ-11") and not has_card(ledger, "ZZ-1") and not has_card(ledger, "ZZ-5"))
+    check("the next id follows the highest one in the ledger", next_id(ledger + "[QQ-40]", "ZZ") == "ZZ-12" and next_id("", "ZZ") == "ZZ-1")
+    recs = [{"version": "1.0.0", "snapshot": {"empty_catches": 2, "long_methods": 1}}]
+    hf = {"sha": "h", "snapshot": {"empty_catches": 3, "long_methods": 1}, "allowed": {"empty_catches": "ZZ-9"}}
+    bf = {"sha": "b", "where": "origin/main", "snapshot": {"empty_catches": 2, "long_methods": 0}}
+    shield(recs, [hf, bf], hf, hf["allowed"])
+    b2, o2 = best_base(recs, [hf, bf])
+    check("a widened total is judged at HEAD's floor alone and the rest stay ratcheted",
+          b2["empty_catches"] == 3 and o2["empty_catches"] == "floor h" and b2["long_methods"] == 0)
     passed = sum(ok for _, ok in cases)
     for name, ok in cases:
         if not ok:
@@ -1043,7 +1161,8 @@ def main():
     rt.add_argument("--base", help="a second ref whose memory also sets the bar, such as origin/main or the commit a push started from")
     fp = sub.add_parser("floor")
     fp.add_argument("--write", action="store_true")
-    fp.add_argument("--allow-worse", dest="allow_worse", action="store_true", help="the owner's say that a worse floor is wanted; name it in the commit")
+    fp.add_argument("--allow-worse", dest="allow_worse", action="store_true", help="the owner's say that a worse floor is wanted; needs --card")
+    fp.add_argument("--card", help="the ledger row that says which rule bends and why, such as MG-15; it must be a row of docs/TODO.md")
     args = ap.parse_args()
     configure(args.repo or find_repo(os.path.dirname(os.path.abspath(__file__))))
     if args.cmd == "report":

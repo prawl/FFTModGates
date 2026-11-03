@@ -8,6 +8,13 @@ with a date and no hash.
 
 ## 0.1 cycle
 
+- [MG-3] SHIPPED fe4af4c 2026-11-02: Every production file now has its own row of comment lines,
+  longest block, code lines, silent catches and long methods in docs/health/files.json, and the
+  health ratchet holds the file to it on every build. Comments and the block are frozen, code may
+  grow to 200 lines, debt only shrinks, a new or renamed file meets the full rule, partial parts
+  count as one file, and a shrunk row must be committed. (Tech: health.py floor --write writes the
+  rows, ratchet judges them against HEAD and the base ref, FileRows.cs feeds the comment budget and
+  silent catch tests, comments.json and silentCatchAllowlist are gone.)
 - [MG-4] SHIPPED eeea715 2026-11-02: The style contract checks the repo's line ending file against
   the shared one, the same way as the style file, so line endings stop being a judgment call. (Tech:
   StyleContractTests, the byte for byte check over .editorconfig and .gitattributes.)

@@ -34,8 +34,26 @@ function Get-Rule {
 
 Write-Host "[gates] shared rules $GatesVersion, repo $GatesRepoRoot"
 
+function Get-Confession {
+    # The row a refused gate asks for. It names the next free ledger id, so the paper trail of
+    # every rule that got in the way piles up in one place.
+    $prefix = $Rules.ticketPrefix
+    $ids = @()
+    foreach ($name in 'docs\TODO.md', 'docs\CHANGELOG.md') {
+        $path = Join-Path $GatesRepoRoot $name
+        if (Test-Path -LiteralPath $path) {
+            $ids += [regex]::Matches((Get-Content -LiteralPath $path -Raw), "\[$prefix-(\d+)\]") | ForEach-Object { [int]$_.Groups[1].Value }
+        }
+    }
+    $next = 1
+    if ($ids.Count -gt 0) { $next = ($ids | Measure-Object -Maximum).Maximum + 1 }
+    $date = Get-Date -Format 'yyyy-MM-dd'
+    return "If the rule is wrong here, paste this row under Backlog in docs/TODO.md and say why: - [$prefix-$next] ${date}: Wanted to bend <rule>, because <why>."
+}
+
 function Invoke-ManifestGate {
-    # The copy of the rulebook must match what was published, file for file. Runs first.
+    # The copy of the rulebook must match what was published, file for file. Runs first. There is
+    # no override; a fix to the rules goes upstream, and the confession row records that it had to.
     param(
         [Parameter(Mandatory = $true)][ValidateSet('DEPLOY', 'PACKAGE', 'CHECK')]
         [string]$FailVerb
@@ -43,7 +61,7 @@ function Invoke-ManifestGate {
 
     & python (Join-Path $GatesDir 'tools\manifest.py') verify --dir $GatesDir
     if ($LASTEXITCODE -ne 0) {
-        throw "REFUSING TO ${FailVerb}: the rulebook copy under $GatesDir does not match its fingerprint list (see above)."
+        throw "REFUSING TO ${FailVerb}: the rulebook copy under $GatesDir does not match its fingerprint list (see above). $(Get-Confession)"
     }
 }
 

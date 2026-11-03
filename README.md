@@ -154,7 +154,11 @@ file to its row on every build.
 - When a file shrinks, or is new, or is gone, the row must follow before a build passes. Run
   `python gates/tools/health.py floor --write` and commit `files.json` with the change. The
   comment budget test reads the same rows, so `dotnet test` says the same thing earlier.
-- Widening a row is the owner's call, with `floor --write --allow-worse`, named in the commit.
+- Widening a row or a total is the owner's call. Every refusal ends with a Backlog row to paste
+  that names the rule it wanted to bend and why, under the next free ledger id. The owner then
+  runs `floor --write --allow-worse --card <id>` citing that row. The records remember the card,
+  and the ratchet judges a widened key at HEAD alone, so the override survives CI's base ref. A
+  pile of such rows against one rule says the rule is wrong, not the code.
 
 ## Taking a newer rulebook
 
