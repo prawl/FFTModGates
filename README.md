@@ -208,11 +208,14 @@ upstream here, never into a mod's copy.
 
 | Mod | Rulebook | Since | Hookup commit |
 | --- | --- | --- | --- |
-| Treasure Master | v0.1.0 | 2026-11-03 | b8287c9 |
-| Living Weapons | v0.1.1 | 2026-11-03 | 22a290ff |
-| Offensive Chemist | v0.1.1 | 2026-11-03 | bb6f60d |
-| Color Customizer | v0.1.2 | 2026-11-03 | 379c1a12 |
+| Treasure Master | v0.2.0 | 2026-11-03 | 2a41233 |
+| Living Weapons | v0.2.0 | 2026-11-03 | 3d265cba |
+| Offensive Chemist | v0.2.0 | 2026-11-03 | 9feffe2 |
+| Color Customizer | v0.2.0 | 2026-11-03 | 83f64593 |
 | The private mod | not yet | | |
+
+The hookup commit is the one that took the version shown. Offensive Chemist runs the rulebook
+without the health gate until its Python is opted in.
 
 The paydown of the recorded debt starts when every row names a version.
 

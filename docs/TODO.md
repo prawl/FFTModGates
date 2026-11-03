@@ -13,9 +13,16 @@ gate lives in docs/RELEASE_SCOPE.md.
 ## Backlog
 
 - [MG-24] 2026-11-03: Move the four mods onto rulebook v0.2.0 and fill their rows in the README's
-  Who is on it table, with Offensive Chemist opting its tools Python into the health gate on the
-  way, so every mod runs the same rules again. (Tech: git subtree pull at v0.2.0 in each mod;
-  Offensive Chemist adds pythonProd to its rules.json and Invoke-HealthGate to its pipeline.)
+  Who is on it table, so every mod runs the same rules again. (Tech: git subtree pull at v0.2.0
+  in each mod, from the local rulebook until the tag is pushed; the shared pre-commit shim
+  installed in each, replacing two stale attribution guards kept as pre-commit.before.)
+- [MG-26] 2026-11-03: Opt Offensive Chemist's tools Python into the health gate, since its
+  pipeline still skips that gate and its tools would go red the day it lists them, with
+  thirteen comment lines holding a colon or a dash, one 284 character opening docstring
+  sentence and a bare __init__.py. (Tech: pythonProd in its rules.json; Invoke-HealthGate
+  inside its Invoke-SharedGates; Write-HealthReport in Publish.ps1 or publishScript emptied;
+  CommentBudget, SilentCatch and FileRows linked into its test project; the first floor comes
+  from the pre-commit on that commit.)
 
 ## Walled (blocked by engine / external)
 
