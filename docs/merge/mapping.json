@@ -1,0 +1,15 @@
+{
+  "TodoContractTests": {
+    "shared": "Tests/TodoContractTests.cs",
+    "renamed": {
+      "Now_section_holds_at_most_five_entries": "Now_holds_at_most_five_cards_unless_the_list_is_locked",
+      "Every_BB_id_is_unique_across_TODO_and_CHANGELOG": "Every_id_is_unique_across_TODO_and_CHANGELOG",
+      "Every_LW_id_is_unique_across_TODO_and_CHANGELOG": "Every_id_is_unique_across_TODO_and_CHANGELOG",
+      "Every_TM_id_is_unique_across_TODO_and_CHANGELOG": "Every_id_is_unique_across_TODO_and_CHANGELOG",
+      "Every_CC_id_is_unique_across_TODO_and_CHANGELOG": "Every_id_is_unique_across_TODO_and_CHANGELOG",
+      "Every_OC_id_is_unique_across_TODO_and_CHANGELOG": "Every_id_is_unique_across_TODO_and_CHANGELOG"
+    },
+    "local": {},
+    "wontfix": {}
+  }
+}
