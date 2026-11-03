@@ -27,6 +27,12 @@ gate lives in docs/RELEASE_SCOPE.md.
   files hold design notes with em dashes that are not game text.
 - [MG-6] 2026-11-02: Have the shared setup's /gates status print the rulebook version a repo is
   on, so one screen shows both the session gates and the build gates.
+- [MG-17] 2026-11-03: A mod written in Python gets only the ledger, style and comment contracts
+  from the rulebook, because the health tape measure and the comment budget read C# alone and
+  the health ratchet refuses a repo with zero production rows; decide whether health.py and the
+  comment tests should measure Python under tools, including tools/lib, which the comment scan
+  skips today. Found hooking up Offensive Chemist, which links seven test files by name instead
+  of Tests/** and leaves the health gate out of its pipeline.
 
 ## Walled (blocked by engine / external)
 
