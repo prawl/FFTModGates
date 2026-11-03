@@ -6,6 +6,17 @@ Where docs/TODO.md items land when they ship, die, or retract; newest first with
 Entry first line: `- [MG-<n>] SHIPPED <hash> YYYY-MM-DD: <summary>`, or WONTFIX / RETRACTED
 with a date and no hash.
 
+## 0.2 cycle
+
+- [MG-21] SHIPPED 2c679b3 2026-11-03: Deleting unique code can no longer make the duplication
+  floor refuse a build. The ratchet now holds the number of lines sitting in repeated blocks,
+  not their share of all code, so a shrink with no new repeated line passes. Found swapping
+  Color Customizer onto the shared logger, where removing five logger files raised the share
+  from 3.13% to 3.19% and the owner had to widen under CC-50. (Tech: the snapshot gains
+  duplicated_lines and RATCHET_ROWS judges it in place of duplication, which stays in the
+  report; a floor without the key is silent on it until floor --write records it, as this
+  repo's floor now does; two selftest cases.)
+
 ## 0.1 cycle
 
 - [MG-20] SHIPPED 9ec036c 2026-11-03: Two production files with the same name no longer crash

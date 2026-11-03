@@ -35,15 +35,6 @@ gate lives in docs/RELEASE_SCOPE.md.
   - Verify: the script run on this repo prints nothing and exits 0; a planted colon comment in
     Logging prints its file and line and exits 1; the same edit through the hook puts the line
     in front of the session; a full scan of this repo finishes in under a second.
-- **[MG-21] Ratchet repeated lines as a count, not a share** (opened 2026-11-03) [QUEUED]
-  - Done means: deleting unique code can never make the duplication floor refuse a build,
-    because the ratchet judges how many lines sit in repeated blocks, not what share of the
-    code they are. The share stays in the report. The first floor after the change sets the
-    bar. (Tech: the snapshot gains duplicated_lines; RATCHET_ROWS judges it in place of
-    duplication; a floor without the key stays silent on it, the existing rule for a measure
-    newer than the record.)
-  - Verify: a selftest case where a tree loses unique code with no new repeated line passes
-    the ratchet while the share rises; floor --write here writes the count; Check.ps1 green.
 - **[MG-23] Make every count freezing refusal name its baseline and the command that moves it** (opened 2026-11-03) [QUEUED]
   - Done means: when a test that freezes a count goes red, its message says which file holds
     the number and how to move it, so the fix and the baseline land in one edit instead of

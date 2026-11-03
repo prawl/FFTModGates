@@ -12,6 +12,7 @@ gate measures can get worse, and the copy itself cannot drift from what was publ
 | `Tests/` | The shared contract tests and the helpers they read the repo through, compiled into the mod's test project | Its `rules.json` and the baselines under `docs/health` |
 | `tools/health.py` | The code health report, the ratchet, the floor and the per-file rows | Nothing beyond `rules.json` |
 | `tools/manifest.py` | The fingerprint list, so the copy cannot drift | Nothing |
+| `tools/style_scan.py` | The one second read of the comment and style rules, run after each edit by the shared setup's hook and by hand before `dotnet test`; the rules sit beside it in `style_rules.py` | Nothing beyond `rules.json` |
 | `pipeline/gates.ps1` | The gate functions: manifest, format, unit tests, health, temp leftovers | Its own gates below the dot-source line |
 | `Directory.Build.targets` | Warnings as errors and code style in the build | One import line |
 | `.editorconfig` | The code style the build enforces | A byte-for-byte copy at its root |
@@ -196,4 +197,6 @@ contracts, because each one checks that mod's own files.
 
 `.\Check.ps1` runs every gate here, under Windows PowerShell 5.1 and PowerShell 7 in CI. Run
 `python tools/manifest.py write` before committing; a stale list fails the check. The ledger is
-`docs/TODO.md` and `docs/CHANGELOG.md` with the MG id prefix.
+`docs/TODO.md` and `docs/CHANGELOG.md` with the MG id prefix. `python tools/style_scan.py` answers
+the comment and style rules in a second, on the whole repo or on the files named; the shared setup
+runs it after every edit, so a slip shows before the gate does.
