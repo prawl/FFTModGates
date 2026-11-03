@@ -23,6 +23,17 @@ gate lives in docs/RELEASE_SCOPE.md.
 
 ## Backlog
 
+- [MG-22] 2026-11-03: Give the comment and style rules a scanner that answers in a second, so
+  a session sees a bad comment right after writing it instead of seven minutes later when the
+  full gate goes red. Found in the first handoff feedback from the private mod: the gate went
+  red five times on comment width, first sentence length and the README map, each a seven
+  minute rerun. (Tech: a Python script under tools that applies the text rules
+  CommentContractTests and StyleContractTests hold, colon or dash in a production comment
+  sentence, ticket ids and review talk in any comment, first summary sentence over 110, two
+  blank lines above python definitions, exit 1 with file and line; the C# tests stay the
+  verdict. Usable as a PostToolUse hook on .cs, .py and .ps1 edits from the shared setup, and
+  as a step before dotnet test. The Living Weapons hookup had such a script in a scratchpad
+  only.)
 - [MG-21] 2026-11-03: Ratchet the number of repeated lines, not their share of all code, so
   deleting unique code can never make the duplication floor refuse a build. Found swapping Color
   Customizer onto the shared logger: removing five logger files raised the share from 3.13% to
