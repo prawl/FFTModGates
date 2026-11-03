@@ -19,6 +19,9 @@ internal sealed class Rules
     public string? DevDefine { get; init; }
     public string[] TempPrefixes { get; init; } = Array.Empty<string>();
     public string[] TempKeep { get; init; } = Array.Empty<string>();
+    public string LoggingDoc { get; init; } = "docs/LOGGING.md";
+    public string[] ConsoleAllowlist { get; init; } = Array.Empty<string>();
+    public string[] FenceExemptFiles { get; init; } = Array.Empty<string>();
 
     private static Rules? _loaded;
 

@@ -11,5 +11,25 @@
     },
     "local": {},
     "wontfix": {}
+  },
+  "LogContractTests": {
+    "shared": "Tests/LogContractTests.cs",
+    "note": "Color Customizer takes this family once its logger moves to the shared one; Offensive Chemist's build voice rules stay with its Python tools.",
+    "renamed": {
+      "FacadeCallStringLiterals_detects_a_double_dash_and_an_em_dash_and_passes_a_clean_call": "FacadeCallStringLiterals_detects_a_double_dash_separator",
+      "Console_writes_live_only_inside_the_file_console_logger": "Console_writes_live_only_inside_the_facade_or_the_shrinking_allowlist",
+      "No_file_calls_a_deleted_raw_logger_entry_point": "No_file_calls_a_retired_logger_entry_point",
+      "The_retired_Log_shim_has_no_call_sites_and_never_comes_back": "No_file_calls_a_retired_logger_entry_point",
+      "No_ModLogger_call_in_the_repo_passes_a_string_literal_with_a_double_dash_or_em_dash": "No_facade_call_in_the_repo_passes_a_string_literal_with_a_double_dash_or_em_dash",
+      "No_typed_console_eligible_call_in_the_repo_opens_with_a_bare_leader_word": "No_console_eligible_facade_call_in_the_repo_opens_with_a_bare_leader_word"
+    },
+    "local": {
+      "No_bare_print_in_tools_python_outside_say_py": "Offensive Chemist's Python build voice, say.py",
+      "Verb_set_in_say_py_matches_the_LOGGING_md_glossary_one_for_one": "Offensive Chemist's Python build voice, say.py",
+      "The_verb_set_is_the_agreed_closed_eight": "Offensive Chemist's Python build voice, say.py",
+      "No_em_dash_in_tools_python_or_LOGGING_md": "Offensive Chemist's Python build voice, say.py",
+      "No_double_dash_separator_in_LOGGING_md_or_on_say_call_lines": "Offensive Chemist's Python build voice, say.py"
+    },
+    "wontfix": {}
   }
 }
