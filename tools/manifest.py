@@ -30,6 +30,9 @@ def tracked_files(root):
 
 
 def present_files(root):
+    """What a reader of this copy would see. Inside a checkout that is git's view, so an ignored local file is not drift."""
+    if os.path.exists(os.path.join(root, ".git")):
+        return tracked_files(root)
     found = []
     for folder, dirs, names in os.walk(root):
         dirs[:] = [d for d in dirs if d not in SKIP_DIRS]
