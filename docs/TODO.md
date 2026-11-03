@@ -33,6 +33,12 @@ gate lives in docs/RELEASE_SCOPE.md.
   comment tests should measure Python under tools, including tools/lib, which the comment scan
   skips today. Found hooking up Offensive Chemist, which links seven test files by name instead
   of Tests/** and leaves the health gate out of its pipeline.
+- [MG-18] 2026-11-03: Decide whether the ledger may let Now go empty, since the owner finds the
+  refusal at every last exit annoying and the reason behind it is not written down anywhere; the
+  rule has been in the ledger test since its first day (Living Weapons f338eb84, 2026-07-05) and
+  reads as a forcing function, so each exit also names what comes next. (Tech: the NotEmpty
+  assertion in TodoContractTests and the "Now never goes empty" line in the global CLAUDE.md; a
+  change here lands in every repo on the rulebook at its next subtree pull.)
 
 ## Walled (blocked by engine / external)
 
