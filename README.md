@@ -182,7 +182,7 @@ published list. A fix to the rules goes upstream here, never into a mod's copy.
 | Treasure Master | v0.1.0 | 2026-11-03 | b8287c9 |
 | Living Weapons | v0.1.1 | 2026-11-03 | 22a290ff |
 | Offensive Chemist | v0.1.1 | 2026-11-03 | bb6f60d |
-| Color Customizer | not yet | | |
+| Color Customizer | v0.1.2 | 2026-11-03 | 379c1a12 |
 | The private mod | not yet | | |
 
 The paydown of the recorded debt starts when every row names a version.

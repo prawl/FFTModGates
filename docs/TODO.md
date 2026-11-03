@@ -20,24 +20,6 @@ gate lives in docs/RELEASE_SCOPE.md.
   - Verify: in a scratch repo on the rulebook, a commit that shrinks a file lands with the
     updated rows staged and the ratchet green right after; a commit that widens a row is
     refused with the row to paste; Check.ps1 green here.
-- **[MG-19] Hold a mod's warning count to a record while it pays its warnings down** (opened 2026-11-03) [BUILDING]
-  - Done means: a mod that turns the shared warnings as errors switch off gets its compiler
-    warnings counted on every build and held to docs/health/warnings.json, so the count can
-    only fall; the first run writes the record, a lower count moves it, and a higher count is
-    refused with the confession row. Nothing changes for a mod on warnings as errors. (Tech:
-    Invoke-WarningRatchet inside Invoke-HealthGate, armed by ModGatesWarningsAsErrors false in
-    the root Directory.Build.targets; a full rebuild of every non test project in rules.json,
-    distinct warning lines counted; the record holds since, warnings and an optional card.)
-  - Verify: Color Customizer's first deploy writes the record at its 264 warnings; a planted
-    unused variable is refused with the row to paste and passes again once removed; Check.ps1
-    green here.
-- **[MG-20] Let the image literal lists work when two production files share a name** (opened 2026-11-03) [BUILDING]
-  - Done means: the allow list and pin table checks no longer crash when two production files
-    share a file name, which Color Customizer has twice; a name counts as still needing its
-    entry when any file of that name does. (Tech: ToLookup by file name instead of
-    ToDictionary in ImageLiteralContractTests.)
-  - Verify: the shared tests pass in Color Customizer with its two StoryCharacterRegistry.cs
-    and two ModInitializer.cs files; Check.ps1 green here.
 
 ## Backlog
 
