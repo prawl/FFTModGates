@@ -18,39 +18,11 @@ gate lives in docs/RELEASE_SCOPE.md.
     the denominator, 89 facts; same-name facts reconcile by diffing masked bodies, strictest
     wins, every InlineData case carried.)
   - Verify: the mapping check in Selftest is green and names 89 of 89 placed.
-- **[MG-8] A mod cannot quietly edit its copy of the rulebook** (opened 2026-11-02) [BUILDING]
-  - Done means: the rulebook ships a list of every file's fingerprint, every build checks the
-    mod's gates folder against it and refuses to run when a file differs, and this repo refuses
-    a commit whose list is stale. (Tech: MANIFEST.sha256 at the root, tools/manifest.py write
-    and verify, Invoke-ManifestGate first in gates.ps1, a self test that the list is current.)
-  - Verify: edit one line under gates/ in a scratch copy and the build refuses; Check.ps1 here
-    refuses when a file changes without the list.
-- **[MG-9] The health ratchet cannot be dodged by deleting or editing its memory** (opened 2026-11-02) [BUILDING]
-  - Done means: a repo on the rulebook with no health record fails the build instead of
-    warning, the bar is read from the last commit and from the main branch rather than the
-    working copy, and in CI from the commit the push started from. (Tech: ratchet reads
-    floor.json at HEAD and at the base ref via git show; GATES_BASE_SHA from the workflow;
-    no record is exit 1 once rules.json exists.)
-  - Verify: in a scratch copy, delete floor.json and the ratchet fails; edit a number worse
-    in the working copy and the ratchet still judges against the committed one.
-- **[MG-10] The self test builds the rulebook the way a real mod does** (opened 2026-11-02) [BUILDING]
-  - Done means: the logger compiles into a library of its own and the shared tests into a
-    separate test project that sees it only through InternalsVisibleTo, the same two steps a
-    mod takes, and the README names every trap the first mod would hit. (Tech: Selftest/Mod
-    and Selftest/Tests projects; README covers Token(), three verbs minimum, the null logger
-    setup, no parallel runs, Enter and Exit GateTemp, Compile Remove for a root csproj.)
-  - Verify: Check.ps1 green with the two projects; a reviewer follows the README on a fresh
-    repo without a surprise.
-
 ## Backlog
 
 - [MG-11] 2026-11-02: Pin what a mod takes to a tagged version and prove the gates under both
   PowerShells, since local runs use 5.1 and CI used only 7. (Tech: tag v0.1.0 when Treasure
-  Master is green, README pulls the tag, CI runs Check.ps1 under shell powershell and pwsh.)
-- [MG-12] 2026-11-02: Say why the build settings force what they force, and list every rules.json
-  key with who reads it, since three readers parse it. (Tech: a why line on Nullable, LangVersion
-  and MSB3277 in Directory.Build.targets; a key table in the README.)
-
+  Master is green, README pulls the tag, CI runs Check.ps1 under shell powershell and pwsh, done 6276a6f.)
 - [MG-3] 2026-11-02: Make every health number a per-file row that can only shrink, so fixing one
   long method and adding another no longer nets to zero. New files have no row and must meet the
   full rule. A file over 200 code lines fails for a new file, and partial class parts count as
