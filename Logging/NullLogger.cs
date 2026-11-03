@@ -2,7 +2,7 @@ using System;
 
 namespace ModGates.Logging;
 
-/// <summary>The logger that swallows everything, so tests that exercise logging code never touch the console or disk.</summary>
+/// <summary>Swallows everything, so tests never touch the console or disk.</summary>
 internal sealed class NullLogger : ILogger
 {
     public static readonly NullLogger Instance = new();

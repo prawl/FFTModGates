@@ -18,11 +18,19 @@ gate lives in docs/RELEASE_SCOPE.md.
     the denominator, 89 facts; same-name facts reconcile by diffing masked bodies, strictest
     wins, every InlineData case carried.)
   - Verify: the mapping check in Selftest is green and names 89 of 89 placed.
+
 ## Backlog
 
 - [MG-11] 2026-11-02: Pin what a mod takes to a tagged version and prove the gates under both
   PowerShells, since local runs use 5.1 and CI used only 7. (Tech: tag v0.1.0 when Treasure
-  Master is green, README pulls the tag, CI runs Check.ps1 under shell powershell and pwsh, done 6276a6f.)
+  Master is green, README pulls the tag; CI runs Check.ps1 under shell powershell and pwsh since
+  6276a6f.)
+- [MG-13] 2026-11-02: When a gate refuses, its message asks for a confession row in the ledger
+  saying which rule it wanted to bend and why, and an owner override must cite that row's id. The
+  gate stays red either way; the row is the paper trail, and a pile of rows against one rule says
+  the rule is wrong. (Tech: refusal text from the manifest gate and the ratchet names the exact
+  Backlog row to paste with the repo's prefix; floor --allow-worse takes --card <id> and checks
+  the id exists in TODO.md; the floor record stores the card.)
 - [MG-3] 2026-11-02: Make every health number a per-file row that can only shrink, so fixing one
   long method and adding another no longer nets to zero. New files have no row and must meet the
   full rule. A file over 200 code lines fails for a new file, and partial class parts count as

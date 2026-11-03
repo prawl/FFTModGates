@@ -3,9 +3,8 @@ using System;
 namespace ModGates.Logging;
 
 /// <summary>
-/// A logger bound to one verb and one armed predicate, built by ModLogger.For. Info and Warn
-/// demote to Debug while the module is not armed, so call sites never branch on armed
-/// themselves. Debug is never gated; file evidence is always worth keeping.
+/// A logger bound to one verb and one armed check. Info and Warn demote to Debug while the
+/// module is not armed, so call sites never branch on armed themselves.
 /// </summary>
 internal readonly struct ScopedLogger
 {
@@ -32,7 +31,7 @@ internal readonly struct ScopedLogger
 
     public void Debug(string message) => ModLogger.Debug(_verb, message);
 
-    /// <summary>An armed predicate may read game memory; a throw there must not take the log line with it.</summary>
+    /// <summary>A throw inside the armed check must not lose the log line.</summary>
     private bool SafeArmed()
     {
         try { return _armed(); } catch { return false; }

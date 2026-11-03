@@ -5,13 +5,9 @@ using System.IO;
 namespace ModGates.Logging;
 
 /// <summary>
-/// The production logger with two sinks. The file (FileStem.log, rotated at launch to
-/// FileStem.prev.log) gets every message of every tier, each line stamped to the millisecond.
-/// The console gets a message only at or above the threshold, and only the first time its
-/// (level, verb, message) identity appears in a battle; NoteBattleEdge clears that memory. The
-/// file line always carries the verb bracket; the console drops it at Info tier, the tier a
-/// player reads as prose. A sink that throws never takes the call down with it; the fault goes
-/// to the mod's note hook, and every Error asks the mod's flush hook to keep its recorder.
+/// The production logger with two sinks. The file gets every line. The console gets a line
+/// only at or above the threshold, once per battle, and without the verb bracket at Info tier.
+/// A sink that throws never takes the call down with it.
 /// </summary>
 internal sealed class FileConsoleLogger : ILogger
 {
@@ -22,8 +18,7 @@ internal sealed class FileConsoleLogger : ILogger
     private readonly Action _errorFlush;
     private readonly HashSet<(LogLevel Level, LogVerb Verb, string Message)> _consoleSeenThisBattle = new();
 
-    /// <summary>One lock around Write and NoteBattleEdge. The game thread logs from inside a hook
-    /// while other threads log from their own, and the dedup set is a plain HashSet.</summary>
+    /// <summary>Several threads log at once, and the dedup set is a plain set.</summary>
     private readonly object _gate = new();
 
     public LogLevel LogLevel { get; set; } = LogLevel.Info;
@@ -42,8 +37,7 @@ internal sealed class FileConsoleLogger : ILogger
         _errorFlush = errorFlush ?? (() => { });
     }
 
-    /// <summary>Rotates the previous launch's log aside, then appends one line per call. A locked
-    /// or read-only folder leaves the mod with console logging only instead of no mod.</summary>
+    /// <summary>Rotates the last launch's log aside. A locked folder leaves console only.</summary>
     private static Action<string> MakeFileSink(LogSetup setup)
     {
         Action<string> note = setup.FaultNote ?? (_ => { });

@@ -3,10 +3,8 @@ using System;
 namespace ModGates.Logging;
 
 /// <summary>
-/// The static logging facade. Every call site logs through the typed members here (Event, Warn,
-/// Error, Debug, the WithTrace pairs, or a ScopedLogger from For), never against ILogger or a
-/// concrete logger. Instance is the test seam. Production creates a FileConsoleLogger lazily
-/// from the setup Init was given.
+/// The static facade every call site logs through. Instance is the test seam. Production
+/// creates a FileConsoleLogger lazily from the setup Init was given.
 /// </summary>
 internal static class ModLogger
 {
@@ -14,7 +12,7 @@ internal static class ModLogger
     private static readonly object _lock = new();
     private static LogSetup? _setup;
 
-    /// <summary>Called once from Mod.cs before anything else logs, so the log file lands beside the DLL.</summary>
+    /// <summary>Called once from Mod.cs before anything else logs.</summary>
     public static void Init(string modDir, string prefix, string fileStem, Action<string>? faultNote = null, Action? errorFlush = null)
         => Init(new LogSetup(modDir, prefix, fileStem, faultNote, errorFlush));
 
@@ -35,7 +33,6 @@ internal static class ModLogger
         set { lock (_lock) { _logger = value; } }
     }
 
-    /// <summary>The console volume threshold. The file always gets everything.</summary>
     public static LogLevel LogLevel
     {
         get => Instance.LogLevel;
@@ -48,27 +45,25 @@ internal static class ModLogger
     public static void Error(LogVerb verb, string message, Exception exception) => Instance.LogError(verb, message, exception);
     public static void Debug(LogVerb verb, string message) => Instance.LogDebug(verb, message);
 
-    /// <summary>A plain Info sentence for the console, paired with a trace line that carries the ids and hex for the file.</summary>
+    /// <summary>A plain console sentence paired with a trace line of ids and hex.</summary>
     public static void EventWithTrace(LogVerb verb, string message, string traceDetail)
     {
         Event(verb, message);
         Debug(LogVerb.Trace, traceDetail);
     }
 
-    /// <summary>The same pair at Warning tier.</summary>
     public static void WarnWithTrace(LogVerb verb, string message, string traceDetail)
     {
         Warn(verb, message);
         Debug(LogVerb.Trace, traceDetail);
     }
 
-    /// <summary>A logger bound to one verb and one armed predicate; Info and Warn demote to Debug while unarmed.</summary>
+    /// <summary>A logger bound to one verb. Info and Warn demote to Debug while unarmed.</summary>
     public static ScopedLogger For(LogVerb verb, Func<bool> armed) => new(verb, armed);
 
-    /// <summary>Clears the console's per-battle dedup memory on every battle edge the mod can see.</summary>
     public static void NoteBattleEdge() => Instance.NoteBattleEdge();
 
-    /// <summary>Test seam. Drops the current logger and setup so the next call recreates the default.</summary>
+    /// <summary>Test seam. The next call recreates the default logger.</summary>
     public static void Reset()
     {
         lock (_lock) { _logger = null; _setup = null; }

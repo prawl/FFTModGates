@@ -31,5 +31,58 @@
       "No_double_dash_separator_in_LOGGING_md_or_on_say_call_lines": "Offensive Chemist's Python build voice, say.py"
     },
     "wontfix": {}
+  },
+  "ImageLiteralContractTests": {
+    "shared": "Tests/ImageLiteralContractTests.cs",
+    "note": "The allow list, the pin tables, the frozen pins and the extra base dependent names come from rules.json; a repo with no Offsets file has none.",
+    "renamed": {
+      "Production_code_holds_no_bare_image_literal_outside_ImageBase": "No_bare_image_address_literal_outside_the_allow_list",
+      "BakesImageAddress_flags_only_long_fields_reading_a_base_dependent_pin": "BakesImageAddress_flags_only_fields_reading_a_base_dependent_address"
+    },
+    "local": {},
+    "wontfix": {}
+  },
+  "CommentBudgetContractTests": {
+    "shared": "Tests/CommentBudgetContractTests.cs",
+    "note": "The frozen baseline moves out of the test into docs/health/comments.json.",
+    "renamed": {},
+    "local": {},
+    "wontfix": {}
+  },
+  "CommentContractTests": {
+    "shared": "Tests/CommentContractTests.cs",
+    "renamed": {},
+    "local": {},
+    "wontfix": {}
+  },
+  "SilentCatchContractTests": {
+    "shared": "Tests/SilentCatchContractTests.cs",
+    "note": "The empty catch count per file a repo still carries on day one lives in rules.json and only shrinks.",
+    "renamed": {
+      "+The_silent_catch_allowlist_only_shrinks_and_names_real_files": "the day one allowlist must tighten the moment a catch is fixed"
+    },
+    "local": {},
+    "wontfix": {}
+  },
+  "StyleContractTests": {
+    "shared": "Tests/StyleContractTests.cs",
+    "note": "The doc and comment width baselines move out of the test into docs/health/style.json.",
+    "renamed": {
+      "+The_repo_copy_of_a_shared_style_file_matches_the_rulebook_byte_for_byte": "the style and line ending files cannot be shared through gates, so the repo's copies are checked against them"
+    },
+    "local": {},
+    "wontfix": {}
+  },
+  "HealthReportWiringContractTests": {
+    "shared": "Tests/HealthReportWiringContractTests.cs",
+    "renamed": {
+      "Every_build_runs_the_health_selftest_the_ratchet_and_the_reminder": "Every_build_runs_the_shared_gates_in_order",
+      "Every_build_runs_the_health_selftest_and_reminder": "Every_build_runs_the_shared_gates_in_order",
+      "Both_scripts_call_the_health_gate_after_the_unit_tests": "Every_build_runs_the_shared_gates_in_order"
+    },
+    "local": {
+      "The_release_workflow_runs_the_gated_publish_and_checks_the_zip": "the zip size and output names are the mod's own"
+    },
+    "wontfix": {}
   }
 }

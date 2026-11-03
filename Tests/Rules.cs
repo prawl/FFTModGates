@@ -1,12 +1,13 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
 namespace ModGates.Tests;
 
 /// <summary>
-/// The repo's rules.json, the one place that says where its production code, tests and
-/// projects are and which ticket prefix its ledger uses. Every shared test reads it from here.
+/// The repo's rules.json, the one place that says where its code is, what its ledger prefix is,
+/// and which files it exempts from which rule. Every shared test reads it from here.
 /// </summary>
 internal sealed class Rules
 {
@@ -22,6 +23,19 @@ internal sealed class Rules
     public string LoggingDoc { get; init; } = "docs/LOGGING.md";
     public string[] ConsoleAllowlist { get; init; } = Array.Empty<string>();
     public string[] FenceExemptFiles { get; init; } = Array.Empty<string>();
+    public string Baselines { get; init; } = "docs/health";
+    public Dictionary<string, string> NoSummaryExempt { get; init; } = new();
+    public Dictionary<string, int> SilentCatchAllowlist { get; init; } = new();
+    public Dictionary<string, string> ImageAllowlist { get; init; } = new(StringComparer.OrdinalIgnoreCase);
+    public Dictionary<string, string> PinTables { get; init; } = new(StringComparer.OrdinalIgnoreCase);
+    public Dictionary<string, string> Pins { get; init; } = new();
+    public string[] BaseDependentNames { get; init; } = Array.Empty<string>();
+    public string? OffsetsFile { get; init; }
+    public string[] BuildScripts { get; init; } = { "BuildLinked.ps1", "Publish.ps1" };
+    public string Pipeline { get; init; } = "tools/pipeline.ps1";
+    public string? PublishScript { get; init; } = "Publish.ps1";
+    public string Workflow { get; init; } = ".github/workflows/release.yml";
+    public string[] PrunedDirs { get; init; } = Array.Empty<string>();
 
     private static Rules? _loaded;
 
@@ -29,6 +43,8 @@ internal sealed class Rules
 
     public string ProdDir => Path.Combine(RepoRoot.Locate(), Prod.TrimEnd('/'));
     public string TestsDir => Path.Combine(RepoRoot.Locate(), Tests.TrimEnd('/'));
+    public string ProdName => Prod.TrimEnd('/');
+    public string BaselinePath(string file) => Path.Combine(RepoRoot.Locate(), Baselines, file);
 
     private static Rules Read(string root)
     {

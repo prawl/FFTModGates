@@ -133,8 +133,9 @@ Everything below is one commit. No gameplay code moves.
 
 6. Copy `gates/.editorconfig` to the repo root. The style contract checks the two match.
 
-7. Record today's numbers and commit them with the hookup: `python gates/tools/health.py floor --write`.
-   From then on a build with no committed floor is refused, not warned about.
+7. Record today's numbers and commit them with the hookup, with
+   `python gates/tools/health.py floor --write`. From then on a build with no committed floor is
+   refused, not warned about.
 
 ## Taking a newer rulebook
 
