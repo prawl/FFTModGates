@@ -10,13 +10,15 @@ gate lives in docs/RELEASE_SCOPE.md.
 
 ## Now (release: 0.1)
 
-- **[MG-11] Pin what a mod takes to a tagged version** (opened 2026-11-02) [QUEUED]
-  - Done means: a mod vendors the rulebook at a tag, never at whatever main holds today, so two
-    mods on one tag run the same rules and a change here reaches a mod only when it pulls the
-    next tag. (Tech: tag v0.1.0 once Treasure Master runs green on it, the README's subtree lines
-    name the tag; CI already runs Check.ps1 under both PowerShells since 6276a6f.)
-  - Verify: a fresh Treasure Master clone takes the tag with git subtree add, builds, passes its
-    own check, and gates/VERSION prints the number the tag carries.
+- **[MG-7] Track which mods are on the shared rules so the paydown can start when all five are** (opened 2026-11-02) [QUEUED]
+  - Done means: one place in this repo says which mod runs which rulebook version and since when,
+    so anyone can see when the last mod is in and the paydown of the recorded debt can begin.
+    Order after Treasure Master, on v0.1.0 since 2026-11-03: Living Weapons, Offensive Chemist,
+    Color Customizer, and the private mod once its open branch lands. (Tech: a table in README.md
+    with mod, version taken, date and hookup commit; each hookup updates its row in the same
+    session.)
+  - Verify: the table names Treasure Master at v0.1.0 with its hookup commit and gains a row with
+    each later hookup; Check.ps1 passes with the table in place.
 
 ## Backlog
 
@@ -24,10 +26,6 @@ gate lives in docs/RELEASE_SCOPE.md.
   files hold design notes with em dashes that are not game text.
 - [MG-6] 2026-11-02: Have the shared setup's /gates status print the rulebook version a repo is
   on, so one screen shows both the session gates and the build gates.
-- [MG-7] 2026-11-02: Track which mods are on the shared rules, so the paydown can start when all
-  five are. Order after this repo: Treasure Master, Living Weapons, Offensive Chemist, Color
-  Customizer, and the private mod once its open branch lands. The per-file ratchet (MG-3) lands
-  before the first hookup, so no mod migrates twice.
 - [MG-14] 2026-11-02: Have the pre-commit hook write the file rows, so nobody runs floor --write
   by hand and a shrink is never left for the ratchet to ask about. (Tech: the shared pre-commit in
   the setup repo runs health.py floor --write when rules.json is present and stages files.json.)
