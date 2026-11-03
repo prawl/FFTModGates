@@ -23,6 +23,15 @@ gate lives in docs/RELEASE_SCOPE.md.
 
 ## Backlog
 
+- [MG-23] 2026-11-03: Make every refusal from a test that freezes a count say which file holds
+  the baseline and which command moves it, so a change ships with its baseline in the same
+  edit instead of three red reruns. From the second handoff feedback in the private mod: the
+  comment width, comment budget and claim count baselines each went red after one patch, each a
+  rerun, and the session asked for one line naming the freezing tests and where each baseline
+  sits. (Tech: the comment budget reads docs/health/files.json rows moved by health.py floor
+  --write; style.json under docs/health is hand written; a mod's own claim count baseline is
+  its own. The failure message of each such test names its file and its command, and the
+  README gains the same list in one table.)
 - [MG-22] 2026-11-03: Give the comment and style rules a scanner that answers in a second, so
   a session sees a bad comment right after writing it instead of seven minutes later when the
   full gate goes red. Found in the first handoff feedback from the private mod: the gate went
