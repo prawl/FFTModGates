@@ -102,7 +102,11 @@ Everything below is one commit. No gameplay code moves.
    ```
 
    Then delete the same settings from the csproj files; the shared file owns them now. A repo
-   still paying down warnings sets `ModGatesWarningsAsErrors` to false in that root file.
+   still paying down warnings sets `ModGatesWarningsAsErrors` to false in that root file. The
+   health gate then counts the build's warnings on every run and holds them to
+   `docs/health/warnings.json`: the first run writes the record, a lower count moves it, a
+   higher count is refused. Raising the record is the owner's call, with the ledger row named
+   in its `card` field.
 
 5. Load the gate functions at the top of `tools/pipeline.ps1`, keep the repo's own gates below,
    and run them inside the gates' own temp folder:
