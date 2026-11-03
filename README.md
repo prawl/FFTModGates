@@ -171,6 +171,18 @@ The commit is the moment the mod takes the new rules. `gates/VERSION` says which
 prints it, and the manifest gate refuses a build when any file under `gates/` differs from the
 published list. A fix to the rules goes upstream here, never into a mod's copy.
 
+## Who is on it
+
+| Mod | Rulebook | Since | Hookup commit |
+| --- | --- | --- | --- |
+| Treasure Master | v0.1.0 | 2026-11-03 | b8287c9 |
+| Living Weapons | v0.1.1 | 2026-11-03 | 22a290ff |
+| Offensive Chemist | not yet | | |
+| Color Customizer | not yet | | |
+| The private mod | not yet | | |
+
+The paydown of the recorded debt starts when every row names a version.
+
 ## What stays in each mod
 
 Tape tests, data pipeline gates, and the docs, readme, proof claim and pipeline manifest
