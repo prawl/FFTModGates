@@ -8,6 +8,13 @@ with a date and no hash.
 
 ## 0.1 cycle
 
+- [MG-13] SHIPPED 3a96d67 2026-11-02: A refused gate now ends with the Backlog row to paste, under
+  the next free ledger id, naming the rule it wanted to bend and why, so the paper trail of rules
+  that got in the way piles up in one place. The owner widens a rule with floor --write
+  --allow-worse --card <id>, which must be a row of docs/TODO.md; the floor and files records store
+  the card, and the ratchet judges a widened key at HEAD alone so the override survives CI's base
+  ref. (Tech: health.py confession, has_card, next_id, valid_allowances, shield, floor_faults;
+  Get-Confession in gates.ps1 for the manifest gate.)
 - [MG-3] SHIPPED fe4af4c 2026-11-02: Every production file now has its own row of comment lines,
   longest block, code lines, silent catches and long methods in docs/health/files.json, and the
   health ratchet holds the file to it on every build. Comments and the block are frozen, code may

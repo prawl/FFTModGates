@@ -10,17 +10,6 @@ gate lives in docs/RELEASE_SCOPE.md.
 
 ## Now (release: 0.1)
 
-- **[MG-13] A refused gate asks for a confession row, and only a cited row can widen a rule** (opened 2026-11-02) [BUILDING]
-  - Done means: when a gate says no, its message tells you to paste a Backlog row that names the
-    rule it wanted to bend and why, with the repo's own prefix, and the gate stays red until the
-    owner widens the rule by naming that row's id. A pile of such rows against one rule says the
-    rule is wrong, not the code. (Tech: the manifest gate and the health ratchet print the row to
-    paste; floor --allow-worse needs --card <id>, checks the id is a row in docs/TODO.md, and the
-    floor and files records store it; a row the owner widened at HEAD is judged at HEAD's value,
-    not the base ref's, so the override survives CI.)
-  - Verify: in a scratch copy, floor --allow-worse without --card is refused, with an id that is
-    not in TODO.md is refused, and with a real id writes the records naming it; the ratchet then
-    passes against a base ref that still holds the lower value.
 - **[MG-11] Pin what a mod takes to a tagged version** (opened 2026-11-02) [QUEUED]
   - Done means: a mod vendors the rulebook at a tag, never at whatever main holds today, so two
     mods on one tag run the same rules and a change here reaches a mod only when it pulls the
