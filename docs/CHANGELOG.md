@@ -8,6 +8,15 @@ with a date and no hash.
 
 ## 0.1 cycle
 
+- [MG-4] SHIPPED eeea715 2026-11-02: The style contract checks the repo's line ending file against
+  the shared one, the same way as the style file, so line endings stop being a judgment call. (Tech:
+  StyleContractTests, the byte for byte check over .editorconfig and .gitattributes.)
+- [MG-2] SHIPPED eeea715 2026-11-02: The five copies of each contract test are one copy each, losing
+  no rule and no example. Tests/ holds the ledger, log, image literal, comment budget, comment,
+  silent catch, style and health wiring contracts reading rules.json, and the self test proves all
+  172 original facts and 299 examples landed in a shared fact, a local one, or a declared new one.
+  (Tech: docs/merge/originals.json is the denominator, docs/merge/mapping.json the placement,
+  Selftest/Tests/MergeLedgerTests.cs the proof.)
 - [MG-8] SHIPPED 6276a6f 2026-11-02: A mod cannot quietly edit its copy of the rulebook. Every file
   has a fingerprint in MANIFEST.sha256, the manifest gate runs first on every build and refuses a
   copy that differs, and this repo's check refuses a stale list. (Tech: tools/manifest.py write and

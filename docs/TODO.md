@@ -10,14 +10,16 @@ gate lives in docs/RELEASE_SCOPE.md.
 
 ## Now (release: 0.1)
 
-- **[MG-2] Merge the five copies of each contract test into one, losing no rule and no example** (opened 2026-11-02) [BUILDING]
-  - Done means: Tests/ holds one copy of the ledger, log, image literal, comment budget, comment,
-    silent catch, style and health wiring contract tests, reading rules.json for what differs per
-    repo, and a check in this repo proves every fact name and every example case from the five
-    originals landed in a shared fact, a local fact, or a WONTFIX row. (Tech: the fact matrix is
-    the denominator, 89 facts; same-name facts reconcile by diffing masked bodies, strictest
-    wins, every InlineData case carried.)
-  - Verify: the mapping check in Selftest is green and names 89 of 89 placed.
+- **[MG-3] Every health number becomes a per-file row that can only shrink** (opened 2026-11-02) [BUILDING]
+  - Done means: fixing one long method and adding another no longer nets to zero, because
+    every production file has its own row of comment lines, longest block, code lines, empty
+    catches and long methods, and a row may only go down. A new file has no row and meets the
+    full rule, including no more than 200 code lines, and partial class parts count as one file
+    so a split without a real seam cannot pass. A shrink must be committed, not just printed.
+    (Tech: one baseline json per repo written by health.py and read by the comment budget test;
+    zero growth allowance; floor.json totals stay as the report; the global rule text follows.)
+  - Verify: in a scratch copy, growing a file's comments by one line fails, shrinking one and
+    not committing the row fails, and a partial split of a 300 line class fails as one file.
 
 ## Backlog
 
@@ -31,15 +33,6 @@ gate lives in docs/RELEASE_SCOPE.md.
   the rule is wrong. (Tech: refusal text from the manifest gate and the ratchet names the exact
   Backlog row to paste with the repo's prefix; floor --allow-worse takes --card <id> and checks
   the id exists in TODO.md; the floor record stores the card.)
-- [MG-3] 2026-11-02: Make every health number a per-file row that can only shrink, so fixing one
-  long method and adding another no longer nets to zero. New files have no row and must meet the
-  full rule. A file over 200 code lines fails for a new file, and partial class parts count as
-  one file so a split without a real seam cannot pass. (Tech: one baseline json per repo with
-  comment lines, longest block, code lines, empty catches and long methods per production file;
-  zero growth allowance; a shrink must be committed, not just printed; floor.json totals stay as
-  the report.)
-- [MG-4] 2026-11-02: Make the style contract check the repo's .gitattributes against the shared
-  one too, so line endings stop being a judgment call; three of the five mods have none today.
 - [MG-5] 2026-11-02: Let the style contract's em dash ban take a per-repo scope list, since data
   files hold design notes with em dashes that are not game text.
 - [MG-6] 2026-11-02: Have the shared setup's /gates status print the rulebook version a repo is
