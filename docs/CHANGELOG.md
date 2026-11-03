@@ -8,6 +8,15 @@ with a date and no hash.
 
 ## 0.2 cycle
 
+- [MG-22] SHIPPED 35e2059 2026-11-03: A session now sees a bad comment or a layout slip right
+  after writing it, instead of seven minutes later when the full gate goes red. One Python
+  script under tools answers the comment and style rules in a quarter second, on the whole
+  repo or on the files named, and the shared setup runs it after every edit of a .cs, .py,
+  .ps1 or .md file in a repo on the rulebook. The C# tests stay the verdict. From the first
+  handoff feedback in the private mod, where the gate went red five times on rules a reader
+  could not see in advance. (Tech: tools/style_scan.py with the rules in style_rules.py; a
+  PostToolUse hook in the shared settings.json through style_scan.sh and style_scan_hook.py,
+  exit 2 with the hits on stderr; six hook tests through a stub scanner.)
 - [MG-21] SHIPPED 2c679b3 2026-11-03: Deleting unique code can no longer make the duplication
   floor refuse a build. The ratchet now holds the number of lines sitting in repeated blocks,
   not their share of all code, so a shrink with no new repeated line passes. Found swapping

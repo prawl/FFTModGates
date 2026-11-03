@@ -46,7 +46,8 @@
     "shared": "Tests/CommentBudgetContractTests.cs",
     "note": "The frozen baseline moves out of the test into the per-file rows health.py writes to docs/health/files.json, with no growth allowance.",
     "renamed": {
-      "+A_partial_type_is_keyed_by_its_name": "the parts of a partial type share one row, so the key they share is pinned"
+      "+A_partial_type_is_keyed_by_its_name": "the parts of a partial type share one row, so the key they share is pinned",
+      "+Every_frozen_count_refusal_names_its_baseline_file_and_what_moves_it": "every refusal from a frozen count names its baseline file and the command that moves it, pinned through the message builders"
     },
     "local": {},
     "wontfix": {}

@@ -90,6 +90,9 @@ public class StyleContractTests
 
     private static Regex LedgerHead(string prefix) => new(@"^- \*\*\[" + Regex.Escape(prefix) + @"-\d+\] .*\(opened \d{4}-\d{2}-\d{2}\)", RegexOptions.Compiled);
 
+    /// <summary>The style baseline is hand written, so the refusal names the file, the key and the row to add.</summary>
+    internal static string FreezeHint(string key) => $"Baseline: {Rules.Load().Baselines}/style.json, key \"{key}\", hand written; no command moves it. Wrap the line, or add today's count under that key.";
+
     [Theory]
     [InlineData("x = 1\n\n\ndef f():\n    pass\n", "")]
     [InlineData("x = 1\n\ndef f():\n    pass\n", "3: a top level definition with fewer than two blank lines above it")]
@@ -154,7 +157,7 @@ public class StyleContractTests
         var baseline = LoadBaseline().Docs;
         var docs = Directory.EnumerateFiles(Path.Combine(root, "docs"), "*.md").Where(f => Path.GetFileName(f) != "HEALTH.md").Append(Path.Combine(root, "README.md")).Where(File.Exists);
         var grown = docs.Select(f => (Doc: Rel(f), Count: OverlongProse(Lines(f), head))).Where(d => d.Count > baseline.GetValueOrDefault(d.Doc)).ToList();
-        Assert.True(grown.Count == 0, $"wrap prose at {DocWidth} characters, or freeze today's count in style.json docs: " +
+        Assert.True(grown.Count == 0, $"Prose over {DocWidth} characters. {FreezeHint("docs")} Over the width: " +
             string.Join("; ", grown.Select(d => $"\"{d.Doc}\": {d.Count} (frozen at {baseline.GetValueOrDefault(d.Doc)})")));
     }
 
@@ -164,7 +167,7 @@ public class StyleContractTests
         var baseline = LoadBaseline().Comments;
         var grown = Walk(Rules.Load().ProdDir, "*.cs").Select(f => (File: Path.GetFileName(f), Count: OverlongComments(Lines(f))))
             .Where(c => c.Count > baseline.GetValueOrDefault(c.File)).ToList();
-        Assert.True(grown.Count == 0, $"wrap comments at {CommentWidth} characters, or freeze today's count in style.json comments: " +
+        Assert.True(grown.Count == 0, $"Comment lines over {CommentWidth} characters. {FreezeHint("comments")} Over the width: " +
             string.Join("; ", grown.Select(c => $"\"{c.File}\": {c.Count} (frozen at {baseline.GetValueOrDefault(c.File)})")));
     }
 

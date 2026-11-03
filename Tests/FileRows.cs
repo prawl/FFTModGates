@@ -14,7 +14,14 @@ namespace ModGates.Tests;
 /// </summary>
 internal static class FileRows
 {
-    public const string WriteHint = "Run health.py floor --write under the gates folder, then commit docs/health/files.json with this change.";
+    /// <summary>Where the rows live and the one command that moves them, so a refusal is fixable in one edit.</summary>
+    public static string WriteHint => $"Baseline: {Rules.Load().Baselines}/files.json, written by python {HealthScript} floor --write for a shrink, a new file or a gone file; the shared pre-commit runs it for you. Commit it with the change.";
+
+    /// <summary>The owner's override, named the same way everywhere a row can refuse.</summary>
+    public static string WidenHint => $"A wider row is the owner's call: python {HealthScript} floor --write --allow-worse --card <id>, citing a Backlog row that says why.";
+
+    /// <summary>The health tool's path as a mod sees it, or as this repo sees its own.</summary>
+    public static string HealthScript => File.Exists(Path.Combine(RepoRoot.Locate(), "gates", "tools", "health.py")) ? "gates/tools/health.py" : "tools/health.py";
 
     private static readonly Regex TypeDecl = new(
         @"^\s*(?:(?:public|internal|private|protected|static|sealed|abstract|unsafe|readonly|ref|file|new)\s+)*(partial\s+)?(?:class|struct|interface|enum|record(?:\s+(?:class|struct))?)\s+(\w+)",

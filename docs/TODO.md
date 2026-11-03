@@ -22,19 +22,6 @@ gate lives in docs/RELEASE_SCOPE.md.
   - Verify: in a scratch repo on the rulebook, a commit that shrinks a file lands with the
     updated rows staged and the ratchet green right after; a commit that widens a row is
     refused with the row to paste; Check.ps1 green here.
-- **[MG-22] Give the comment and style rules a one second scanner** (opened 2026-11-03) [QUEUED]
-  - Done means: a session sees a bad comment or a layout slip right after writing it, instead
-    of seven minutes later when the full gate goes red. One Python script under tools applies
-    the text rules the comment and style tests hold and prints file, line and rule, exit 1 on
-    any hit. The shared setup runs it after every edit of a .cs, .py or .ps1 file in a repo on
-    the rulebook. (Tech: tools/style_scan.py; a colon, dash or tell in a production comment,
-    ticket ids and review talk in any comment, a first summary sentence over 110, comment
-    lines over 100 past the style.json count, Python layout, C# double blanks, em dashes in
-    the ledger; a PostToolUse hook in the shared settings.json through style_scan.sh; the C#
-    tests stay the verdict.)
-  - Verify: the script run on this repo prints nothing and exits 0; a planted colon comment in
-    Logging prints its file and line and exits 1; the same edit through the hook puts the line
-    in front of the session; a full scan of this repo finishes in under a second.
 - **[MG-23] Make every count freezing refusal name its baseline and the command that moves it** (opened 2026-11-03) [QUEUED]
   - Done means: when a test that freezes a count goes red, its message says which file holds
     the number and how to move it, so the fix and the baseline land in one edit instead of

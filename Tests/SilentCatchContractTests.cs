@@ -29,6 +29,7 @@ public class SilentCatchContractTests
         var rows = FileRows.Load();
         var over = CountsPerRow().Where(kv => kv.Value > (rows.TryGetValue(kv.Key, out var row) ? row.GetValueOrDefault("catches") : 0))
             .Select(kv => $"{kv.Key}: {kv.Value} (its row allows {(rows.TryGetValue(kv.Key, out var row) ? row.GetValueOrDefault("catches") : 0)})").ToList();
-        Assert.True(over.Count == 0, "Empty catches found (note the fault or log it, never swallow it):\n" + string.Join("\n", over));
+        Assert.True(over.Count == 0, "Empty catches found (note the fault or log it, never swallow it):\n" + string.Join("\n", over)
+            + "\nThe catches column of the row only shrinks. " + FileRows.WriteHint);
     }
 }

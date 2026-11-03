@@ -166,6 +166,19 @@ file to its row on every build.
   and the ratchet judges a widened key at HEAD alone, so the override survives CI's base ref. A
   pile of such rows against one rule says the rule is wrong, not the code.
 
+## Every frozen number
+
+A refusal from a test that freezes a count names its baseline and what moves it, so the fix and
+the baseline land in one edit. The same list, in one place:
+
+| Baseline | Who reads it | What moves it |
+| --- | --- | --- |
+| `docs/health/files.json` | the health ratchet, the comment budget test, the silent catch test | `python gates/tools/health.py floor --write` for a shrink, a new file or a gone file, which the shared pre-commit runs for you; `floor --write --allow-worse --card <id>` when the owner widens a row |
+| `docs/health/floor.json` | the health ratchet's totals | the same command |
+| `docs/health/style.json` | the style contract's doc width and comment width counts | hand written, `"docs": {"docs/X.md": n}` and `"comments": {"File.cs": n}`; no command |
+| `docs/health/warnings.json` | the warning ratchet in the health gate | the gate writes a lower count; the owner raises it by hand and names the ledger row in `card` |
+| a mod's own counts (proof claims and the like) | that mod's own tests | its own README says |
+
 ## Taking a newer rulebook
 
 ```

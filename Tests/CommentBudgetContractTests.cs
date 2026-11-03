@@ -139,8 +139,19 @@ public class CommentBudgetContractTests
         }
         Assert.True(problems.Count == 0,
             "Comment budget exceeded.\n\n" + string.Join("\n", problems) +
-            "\n\nCut the comment, or let the owner widen the row with floor --allow-worse and say why in the commit.\n" +
-            (moved.Count == 0 ? "" : "\nRows the health ratchet will ask for:\n" + string.Join("\n", moved) + "\n" + FileRows.WriteHint));
+            "\n\nCut the comment, or widen the row. " + FileRows.WidenHint + "\n" + FileRows.WriteHint + "\n" +
+            (moved.Count == 0 ? "" : "\nRows the health ratchet will ask for:\n" + string.Join("\n", moved) + "\n"));
+    }
+
+    [Fact]
+    public void Every_frozen_count_refusal_names_its_baseline_file_and_what_moves_it()
+    {
+        string baselines = Rules.Load().Baselines;
+        Assert.Contains(baselines + "/files.json", FileRows.WriteHint);
+        Assert.Contains("floor --write", FileRows.WriteHint);
+        Assert.Contains("--allow-worse --card", FileRows.WidenHint);
+        Assert.Contains(baselines + "/style.json", StyleContractTests.FreezeHint("docs"));
+        Assert.Contains("hand written", StyleContractTests.FreezeHint("comments"));
     }
 
     /// <summary>The first sentence of the first summary block, whitespace collapsed, or null when the file has none.</summary>
