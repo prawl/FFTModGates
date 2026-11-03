@@ -8,7 +8,7 @@ being worked for the current release (hard cap 5, each entry carries Done means 
 through docs/CHANGELOG.md, moved there in the commit that ships or kills them. The release ship
 gate lives in docs/RELEASE_SCOPE.md.
 
-## Now (release: 0.1)
+## Now (release: 0.2)
 
 - **[MG-14] Let the pre-commit hook write the file rows, so nobody runs floor --write by hand** (opened 2026-11-02) [QUEUED]
   - Done means: when a commit touches production code in a repo that has rules.json, the
@@ -16,55 +16,70 @@ gate lives in docs/RELEASE_SCOPE.md.
     floor.json, so a shrink, a new file or a gone file never reaches the ratchet unrecorded. A
     worse floor still refuses, with the confession row, since widening stays the owner's call.
     (Tech: the pre-commit in the setup repo; floor --write exits 1 on a worse floor, which
-    refuses the commit; the two files are added to the index after a successful write.)
+    refuses the commit; the two files are added to the index after a successful write. In the
+    rulebook repo itself the same hook rewrites MANIFEST.sha256 and stages it, since the rows
+    it just wrote would otherwise leave the fingerprint list stale on every such commit.)
   - Verify: in a scratch repo on the rulebook, a commit that shrinks a file lands with the
     updated rows staged and the ratchet green right after; a commit that widens a row is
     refused with the row to paste; Check.ps1 green here.
+- **[MG-22] Give the comment and style rules a one second scanner** (opened 2026-11-03) [QUEUED]
+  - Done means: a session sees a bad comment or a layout slip right after writing it, instead
+    of seven minutes later when the full gate goes red. One Python script under tools applies
+    the text rules the comment and style tests hold and prints file, line and rule, exit 1 on
+    any hit. The shared setup runs it after every edit of a .cs, .py or .ps1 file in a repo on
+    the rulebook. (Tech: tools/style_scan.py; a colon, dash or tell in a production comment,
+    ticket ids and review talk in any comment, a first summary sentence over 110, comment
+    lines over 100 past the style.json count, Python layout, C# double blanks, em dashes in
+    the ledger; a PostToolUse hook in the shared settings.json through style_scan.sh; the C#
+    tests stay the verdict.)
+  - Verify: the script run on this repo prints nothing and exits 0; a planted colon comment in
+    Logging prints its file and line and exits 1; the same edit through the hook puts the line
+    in front of the session; a full scan of this repo finishes in under a second.
+- **[MG-21] Ratchet repeated lines as a count, not a share** (opened 2026-11-03) [QUEUED]
+  - Done means: deleting unique code can never make the duplication floor refuse a build,
+    because the ratchet judges how many lines sit in repeated blocks, not what share of the
+    code they are. The share stays in the report. The first floor after the change sets the
+    bar. (Tech: the snapshot gains duplicated_lines; RATCHET_ROWS judges it in place of
+    duplication; a floor without the key stays silent on it, the existing rule for a measure
+    newer than the record.)
+  - Verify: a selftest case where a tree loses unique code with no new repeated line passes
+    the ratchet while the share rises; floor --write here writes the count; Check.ps1 green.
+- **[MG-23] Make every count freezing refusal name its baseline and the command that moves it** (opened 2026-11-03) [QUEUED]
+  - Done means: when a test that freezes a count goes red, its message says which file holds
+    the number and how to move it, so the fix and the baseline land in one edit instead of
+    three reruns. The README lists the same in one table. (Tech: the comment budget, silent
+    catch, doc width and comment width tests; files.json moved by health.py floor --write,
+    style.json hand written under docs/health, warnings.json written by the gate and raised
+    by hand with a card.)
+  - Verify: each named test's failure text carries its baseline path and command, pinned by
+    a test that reads the message builders; the README table lists every baseline the
+    rulebook freezes; Check.ps1 green.
+- **[MG-17] Let a repo opt its Python into the health and comment rules** (opened 2026-11-03) [QUEUED]
+  - Done means: a mod written in Python can be held to the same rules as a C# mod, with the
+    200 line gate, the comment budget, the silent catch and long function counts and the
+    duplication ratchet reading its listed Python folders, tools/lib included. A repo that
+    lists none sees no change. A repo whose record holds zero rows is no longer refused for
+    that alone. The day a folder is first listed is its line in the sand, so a file already
+    over a line that day is debt, not a refusal. (Tech: rules.json pythonProd, a list of
+    folders; health.py and FileRows read .py under them, keyed by repo relative path; the
+    comment contract scans them recursively; this repo opts in its own tools folder.)
+  - Verify: this repo's rows gain its tools Python; a planted silent except in a listed folder
+    is refused by the ratchet; selftest cases cover a Python function over 60 code lines, a
+    silent except and the folder day one rule; Offensive Chemist's tree measured from here
+    reports rows for every file under its tools; Check.ps1 green.
 
 ## Backlog
 
-- [MG-23] 2026-11-03: Make every refusal from a test that freezes a count say which file holds
-  the baseline and which command moves it, so a change ships with its baseline in the same
-  edit instead of three red reruns. From the second handoff feedback in the private mod: the
-  comment width, comment budget and claim count baselines each went red after one patch, each a
-  rerun, and the session asked for one line naming the freezing tests and where each baseline
-  sits. (Tech: the comment budget reads docs/health/files.json rows moved by health.py floor
-  --write; style.json under docs/health is hand written; a mod's own claim count baseline is
-  its own. The failure message of each such test names its file and its command, and the
-  README gains the same list in one table.)
-- [MG-22] 2026-11-03: Give the comment and style rules a scanner that answers in a second, so
-  a session sees a bad comment right after writing it instead of seven minutes later when the
-  full gate goes red. Found in the first handoff feedback from the private mod: the gate went
-  red five times on comment width, first sentence length and the README map, each a seven
-  minute rerun. (Tech: a Python script under tools that applies the text rules
-  CommentContractTests and StyleContractTests hold, colon or dash in a production comment
-  sentence, ticket ids and review talk in any comment, first summary sentence over 110, two
-  blank lines above python definitions, exit 1 with file and line; the C# tests stay the
-  verdict. Usable as a PostToolUse hook on .cs, .py and .ps1 edits from the shared setup, and
-  as a step before dotnet test. The Living Weapons hookup had such a script in a scratchpad
-  only.)
-- [MG-21] 2026-11-03: Ratchet the number of repeated lines, not their share of all code, so
-  deleting unique code can never make the duplication floor refuse a build. Found swapping Color
-  Customizer onto the shared logger: removing five logger files raised the share from 3.13% to
-  3.19% with no repeated line added, and the owner had to widen under CC-50. (Tech: health.py
-  duplicated_share returns a ratio; keep it for the report and judge a duplicated_lines count in
-  the ratchet, with the first floor after the change setting that bar.)
-- [MG-5] 2026-11-02: Let the style contract's em dash ban take a per-repo scope list, since data
-  files hold design notes with em dashes that are not game text.
-- [MG-6] 2026-11-02: Have the shared setup's /gates status print the rulebook version a repo is
-  on, so one screen shows both the session gates and the build gates.
-- [MG-17] 2026-11-03: A mod written in Python gets only the ledger, style and comment contracts
-  from the rulebook, because the health tape measure and the comment budget read C# alone and
-  the health ratchet refuses a repo with zero production rows; decide whether health.py and the
-  comment tests should measure Python under tools, including tools/lib, which the comment scan
-  skips today. Found hooking up Offensive Chemist, which links seven test files by name instead
-  of Tests/** and leaves the health gate out of its pipeline.
 - [MG-18] 2026-11-03: Decide whether the ledger may let Now go empty, since the owner finds the
   refusal at every last exit annoying and the reason behind it is not written down anywhere; the
   rule has been in the ledger test since its first day (Living Weapons f338eb84, 2026-07-05) and
   reads as a forcing function, so each exit also names what comes next. (Tech: the NotEmpty
   assertion in TodoContractTests and the "Now never goes empty" line in the global CLAUDE.md; a
   change here lands in every repo on the rulebook at its next subtree pull.)
+- [MG-5] 2026-11-02: Let the style contract's em dash ban take a per-repo scope list, since data
+  files hold design notes with em dashes that are not game text.
+- [MG-6] 2026-11-02: Have the shared setup's /gates status print the rulebook version a repo is
+  on, so one screen shows both the session gates and the build gates.
 
 ## Walled (blocked by engine / external)
 
