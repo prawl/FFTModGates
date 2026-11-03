@@ -9,8 +9,8 @@ gate measures can get worse, and the copy itself cannot drift from what was publ
 | Folder | What it holds | What a mod supplies |
 | --- | --- | --- |
 | `Logging/` | The logger every mod writes through (ILogger, ModLogger, FileConsoleLogger, NullLogger, ScopedLogger), compiled into the mod's own DLL as linked source | Its `LogVerb.cs` in the `ModGates.Logging` namespace |
-| `Tests/` | The shared contract tests and the helpers they read the repo through, compiled into the mod's test project | Its `rules.json`, baselines and allowlists |
-| `tools/health.py` | The code health report, ratchet and floor | Nothing beyond `rules.json` |
+| `Tests/` | The shared contract tests and the helpers they read the repo through, compiled into the mod's test project | Its `rules.json` and the baselines under `docs/health` |
+| `tools/health.py` | The code health report, the ratchet, the floor and the per-file rows | Nothing beyond `rules.json` |
 | `tools/manifest.py` | The fingerprint list, so the copy cannot drift | Nothing |
 | `pipeline/gates.ps1` | The gate functions: manifest, format, unit tests, health, temp leftovers | Its own gates below the dot-source line |
 | `Directory.Build.targets` | Warnings as errors and code style in the build | One import line |
@@ -134,8 +134,27 @@ Everything below is one commit. No gameplay code moves.
 6. Copy `gates/.editorconfig` to the repo root. The style contract checks the two match.
 
 7. Record today's numbers and commit them with the hookup, with
-   `python gates/tools/health.py floor --write`. From then on a build with no committed floor is
-   refused, not warned about.
+   `python gates/tools/health.py floor --write`. It writes `docs/health/floor.json`, the totals,
+   and `docs/health/files.json`, one row per production file. From then on a build with no
+   committed floor is refused, not warned about.
+
+## The per-file rule
+
+Every production file has a row in `docs/health/files.json`: comment lines, longest comment
+block, code lines, silent catches and methods over 60 code lines. The health ratchet holds each
+file to its row on every build.
+
+- Comment lines and the longest block are frozen at the row. One more comment line fails.
+- Code lines may grow up to 200, silent catches and long methods not at all. A file already over
+  one of those lines on day one carries the debt as its row, and that row only shrinks.
+- A file with no row is new and meets the full rule, under 200 code lines included. A rename is a
+  new file.
+- The parts of a `partial` type are summed under one row named `partial <Type>`, so splitting a
+  file without a real seam changes nothing.
+- When a file shrinks, or is new, or is gone, the row must follow before a build passes. Run
+  `python gates/tools/health.py floor --write` and commit `files.json` with the change. The
+  comment budget test reads the same rows, so `dotnet test` says the same thing earlier.
+- Widening a row is the owner's call, with `floor --write --allow-worse`, named in the commit.
 
 ## Taking a newer rulebook
 

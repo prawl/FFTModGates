@@ -20,6 +20,17 @@ gate lives in docs/RELEASE_SCOPE.md.
     zero growth allowance; floor.json totals stay as the report; the global rule text follows.)
   - Verify: in a scratch copy, growing a file's comments by one line fails, shrinking one and
     not committing the row fails, and a partial split of a 300 line class fails as one file.
+- **[MG-13] A refused gate asks for a confession row, and only a cited row can widen a rule** (opened 2026-11-02) [BUILDING]
+  - Done means: when a gate says no, its message tells you to paste a Backlog row that names the
+    rule it wanted to bend and why, with the repo's own prefix, and the gate stays red until the
+    owner widens the rule by naming that row's id. A pile of such rows against one rule says the
+    rule is wrong, not the code. (Tech: the manifest gate and the health ratchet print the row to
+    paste; floor --allow-worse needs --card <id>, checks the id is a row in docs/TODO.md, and the
+    floor and files records store it; a row the owner widened at HEAD is judged at HEAD's value,
+    not the base ref's, so the override survives CI.)
+  - Verify: in a scratch copy, floor --allow-worse without --card is refused, with an id that is
+    not in TODO.md is refused, and with a real id writes the records naming it; the ratchet then
+    passes against a base ref that still holds the lower value.
 
 ## Backlog
 
@@ -27,12 +38,6 @@ gate lives in docs/RELEASE_SCOPE.md.
   PowerShells, since local runs use 5.1 and CI used only 7. (Tech: tag v0.1.0 when Treasure
   Master is green, README pulls the tag; CI runs Check.ps1 under shell powershell and pwsh since
   6276a6f.)
-- [MG-13] 2026-11-02: When a gate refuses, its message asks for a confession row in the ledger
-  saying which rule it wanted to bend and why, and an owner override must cite that row's id. The
-  gate stays red either way; the row is the paper trail, and a pile of rows against one rule says
-  the rule is wrong. (Tech: refusal text from the manifest gate and the ratchet names the exact
-  Backlog row to paste with the repo's prefix; floor --allow-worse takes --card <id> and checks
-  the id exists in TODO.md; the floor record stores the card.)
 - [MG-5] 2026-11-02: Let the style contract's em dash ban take a per-repo scope list, since data
   files hold design notes with em dashes that are not game text.
 - [MG-6] 2026-11-02: Have the shared setup's /gates status print the rulebook version a repo is
@@ -41,6 +46,9 @@ gate lives in docs/RELEASE_SCOPE.md.
   five are. Order after this repo: Treasure Master, Living Weapons, Offensive Chemist, Color
   Customizer, and the private mod once its open branch lands. The per-file ratchet (MG-3) lands
   before the first hookup, so no mod migrates twice.
+- [MG-14] 2026-11-02: Have the pre-commit hook write the file rows, so nobody runs floor --write
+  by hand and a shrink is never left for the ratchet to ask about. (Tech: the shared pre-commit in
+  the setup repo runs health.py floor --write when rules.json is present and stages files.json.)
 
 ## Walled (blocked by engine / external)
 

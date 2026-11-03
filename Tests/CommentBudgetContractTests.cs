@@ -2,39 +2,26 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Text.RegularExpressions;
 using Xunit;
 
 namespace ModGates.Tests;
 
 /// <summary>
-/// The comment budget. A file in the frozen baseline may not grow its comment lines past a small
-/// allowance or its longest comment block at all. A new file keeps comments under a third of its
-/// code and no block over eight lines. No comment argues, or carries a colon or a dash inside a
-/// sentence. Every file opens with one short plain sentence. The baseline lives in comments.json.
+/// The comment budget. A file with a row in files.json may not grow its comment lines or its
+/// longest comment block at all. A new file keeps comments under a third of its code and no block
+/// over eight lines. No comment argues, or carries a colon or a dash inside a sentence. Every file
+/// opens with one short plain sentence. The parts of a partial type share one row.
 /// </summary>
 public class CommentBudgetContractTests
 {
     private const double NewFileMaxRatio = 1.0 / 3.0;
     private const int NewFileMaxBlock = 8;
-    private const double GrowthAllowance = 0.10;
-    private const int GrowthFloor = 3;
     private const int MaxFirstSentence = 110;
 
     private static readonly Regex TellRegex = new(
         @"load-bearing|deliberately|by design|review blocker|verifier NIT|owner ruling|owner direction|precedent|doctrine",
         RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
-    private static bool HasDirSegment(string path, string segment)
-        => path.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar).Any(part => string.Equals(part, segment, StringComparison.OrdinalIgnoreCase));
-
-    private static IEnumerable<(string Key, string FullPath)> ProductionFiles()
-    {
-        var rules = Rules.Load();
-        foreach (var f in Directory.GetFiles(rules.ProdDir, "*.cs", SearchOption.AllDirectories).Where(f => !HasDirSegment(f, "obj") && !HasDirSegment(f, "bin")).OrderBy(f => f))
-            yield return ($"{rules.ProdName}/{Path.GetFileName(f)}", f);
-    }
 
     internal readonly record struct Measure(int CommentLines, int CodeLines, int MaxBlock, int Colons, int Dashes, List<string> Tells);
 
@@ -48,7 +35,7 @@ public class CommentBudgetContractTests
             string s = raw.Trim();
             if (s.Length == 0) continue;
             string? commentText = null;
-            if (s.StartsWith("//") || s.StartsWith("/*") || s.StartsWith("*"))
+            if (FileRows.IsComment(s))
             {
                 comment++; run++; maxRun = Math.Max(maxRun, run); commentText = s;
             }
@@ -69,23 +56,30 @@ public class CommentBudgetContractTests
         return new Measure(comment, code, maxRun, colons, dashes, tells);
     }
 
-    private static Dictionary<string, Measure> Current()
-        => ProductionFiles().ToDictionary(p => p.Key, p => MeasureText(File.ReadAllText(p.FullPath)), StringComparer.Ordinal);
+    /// <summary>One measure per production file, keyed by its path below the production folder.</summary>
+    private static Dictionary<string, Measure> PerFile()
+        => FileRows.ProductionFiles().ToDictionary(f => f.Path, f => MeasureText(f.Text), StringComparer.Ordinal);
 
-    private static Dictionary<string, int[]> LoadBaseline()
+    /// <summary>One measure per row key, the parts of a partial type summed and their longest block kept.</summary>
+    private static Dictionary<string, (int CommentLines, int CodeLines, int MaxBlock)> PerRow()
     {
-        string path = Rules.Load().BaselinePath("comments.json");
-        if (!File.Exists(path)) return new Dictionary<string, int[]>(StringComparer.Ordinal);
-        return JsonSerializer.Deserialize<Dictionary<string, int[]>>(File.ReadAllText(path)) ?? new Dictionary<string, int[]>(StringComparer.Ordinal);
+        var rows = new Dictionary<string, (int, int, int)>(StringComparer.Ordinal);
+        foreach (var (key, _, text) in FileRows.ProductionFiles())
+        {
+            var m = MeasureText(text);
+            var had = rows.GetValueOrDefault(key);
+            rows[key] = (had.Item1 + m.CommentLines, had.Item2 + m.CodeLines, Math.Max(had.Item3, m.MaxBlock));
+        }
+        return rows;
     }
 
     [Fact]
     public void Scan_covers_the_runtime_and_keys_are_unique()
     {
-        var keys = ProductionFiles().Select(p => p.Key).ToList();
-        Assert.True(keys.Count > 0, "production sweep found no file");
-        var dupes = keys.GroupBy(k => k).Where(g => g.Count() > 1).Select(g => g.Key).ToList();
-        Assert.True(dupes.Count == 0, "two production files share a filename, which would merge their rows: " + string.Join(", ", dupes));
+        var files = FileRows.ProductionFiles();
+        Assert.True(files.Count > 0, "production sweep found no file");
+        var plain = files.Where(f => !f.Key.StartsWith("partial ")).Select(f => f.Key).ToList();
+        Assert.Equal(plain.Count, plain.Distinct(StringComparer.Ordinal).Count());
     }
 
     [Theory]
@@ -102,10 +96,20 @@ public class CommentBudgetContractTests
         Assert.Equal((lines, code, block, colons, dashes, tells), (m.CommentLines, m.CodeLines, m.MaxBlock, m.Colons, m.Dashes, m.Tells.Count));
     }
 
+    [Theory]
+    [InlineData("internal sealed partial class Driver<T>\n{\n}", "Driver")]
+    [InlineData("// partial class Lie\npublic readonly partial record struct Pt(int X);", "Pt")]
+    [InlineData("public static class Util\n{\n  partial void Hook();\n}", null)]
+    [InlineData("global using System;\n", null)]
+    public void A_partial_type_is_keyed_by_its_name(string text, string? expected)
+    {
+        Assert.Equal(expected, FileRows.PartialType(text));
+    }
+
     [Fact]
     public void No_comment_carries_a_tell_phrase_a_colon_or_a_dash()
     {
-        var hits = Current().Where(kv => kv.Value.Tells.Count > 0 || kv.Value.Colons > 0 || kv.Value.Dashes > 0)
+        var hits = PerFile().Where(kv => kv.Value.Tells.Count > 0 || kv.Value.Colons > 0 || kv.Value.Dashes > 0)
             .Select(kv => $"  {kv.Key}, {kv.Value.Colons} colons, {kv.Value.Dashes} dashes, tells {string.Join(", ", kv.Value.Tells)}").ToList();
         Assert.True(hits.Count == 0, "comments that argue, or carry a colon or dash inside a sentence (the owner writes neither):\n" + string.Join("\n", hits));
     }
@@ -113,33 +117,30 @@ public class CommentBudgetContractTests
     [Fact]
     public void Comment_budget_holds_against_the_frozen_baseline()
     {
-        var baseline = LoadBaseline();
-        var current = Current();
+        var rows = FileRows.Load();
         var problems = new List<string>();
-        var rows = new List<string>();
-        foreach (var (key, m) in current.OrderBy(kv => kv.Key, StringComparer.Ordinal))
+        var moved = new List<string>();
+        foreach (var (key, m) in PerRow().OrderBy(kv => kv.Key, StringComparer.Ordinal))
         {
-            string row = $"  \"{key}\": [{m.CommentLines}, {m.MaxBlock}],";
-            if (baseline.TryGetValue(key, out var b))
+            if (rows.TryGetValue(key, out var row))
             {
-                int allowed = b[0] + Math.Max(GrowthFloor, (int)Math.Ceiling(b[0] * GrowthAllowance));
-                if (m.CommentLines > allowed) problems.Add($"{key} has {m.CommentLines} comment lines, baseline {b[0]} allows {allowed}");
-                if (m.MaxBlock > b[1]) problems.Add($"{key} has a comment block of {m.MaxBlock} lines, baseline {b[1]}");
-                if (m.CommentLines < b[0] || m.MaxBlock < b[1]) rows.Add(row + "   shrank, paste to tighten");
+                int lines = row.GetValueOrDefault("comments"), block = row.GetValueOrDefault("block");
+                if (m.CommentLines > lines) problems.Add($"{key} has {m.CommentLines} comment lines, its row allows {lines}");
+                if (m.MaxBlock > block) problems.Add($"{key} has a comment block of {m.MaxBlock} lines, its row allows {block}");
+                if (m.CommentLines < lines || m.MaxBlock < block) moved.Add($"  {key} shrank to {m.CommentLines} lines, block {m.MaxBlock}");
             }
             else
             {
                 double ratio = m.CodeLines == 0 ? 0 : (double)m.CommentLines / m.CodeLines;
                 if (ratio > NewFileMaxRatio) problems.Add($"{key} (new) has {m.CommentLines} comment lines over {m.CodeLines} code lines, cap is one in three");
                 if (m.MaxBlock > NewFileMaxBlock) problems.Add($"{key} (new) has a comment block of {m.MaxBlock} lines, cap is {NewFileMaxBlock}");
-                rows.Add(row + "   new file, paste to freeze");
+                moved.Add($"  {key} has no row yet");
             }
         }
-        foreach (var key in baseline.Keys.Except(current.Keys)) rows.Add($"  {key} no longer exists, drop its row");
         Assert.True(problems.Count == 0,
             "Comment budget exceeded.\n\n" + string.Join("\n", problems) +
-            "\n\nIf the growth is earned, the owner raises the row in comments.json; otherwise cut the comment.\n" +
-            (rows.Count == 0 ? "" : "\nRows that moved (paste into comments.json):\n" + string.Join("\n", rows)));
+            "\n\nCut the comment, or let the owner widen the row with floor --allow-worse and say why in the commit.\n" +
+            (moved.Count == 0 ? "" : "\nRows the health ratchet will ask for:\n" + string.Join("\n", moved) + "\n" + FileRows.WriteHint));
     }
 
     /// <summary>The first sentence of the first summary block, whitespace collapsed, or null when the file has none.</summary>
@@ -181,14 +182,14 @@ public class CommentBudgetContractTests
     {
         var exempt = Rules.Load().NoSummaryExempt;
         var bad = new List<string>();
-        foreach (var (key, path) in ProductionFiles())
+        foreach (var (_, path, text) in FileRows.ProductionFiles())
         {
-            string? first = FirstSummarySentence(File.ReadAllText(path));
+            string? first = FirstSummarySentence(text);
             if (first is null)
             {
-                if (!exempt.ContainsKey(Path.GetFileName(path))) bad.Add($"{key} (no summary block)");
+                if (!exempt.ContainsKey(Path.GetFileName(path))) bad.Add($"{path} (no summary block)");
             }
-            else if (!IsShortSentence(first)) bad.Add($"{key} ({first.Length} chars) {first}");
+            else if (!IsShortSentence(first)) bad.Add($"{path} ({first.Length} chars) {first}");
         }
         Assert.True(bad.Count == 0, $"{bad.Count} files need a first summary sentence of at most {MaxFirstSentence} characters ending in a period.\n" + string.Join("\n", bad));
     }
@@ -205,7 +206,7 @@ public class CommentBudgetContractTests
     [Fact]
     public void Every_summary_exemption_names_a_real_production_file()
     {
-        var names = ProductionFiles().Select(p => Path.GetFileName(p.FullPath)).ToHashSet(StringComparer.Ordinal);
+        var names = FileRows.ProductionFiles().Select(f => Path.GetFileName(f.Path)).ToHashSet(StringComparer.Ordinal);
         var stale = Rules.Load().NoSummaryExempt.Keys.Where(k => !names.Contains(k)).ToList();
         Assert.True(stale.Count == 0, "Stale exemptions " + string.Join(", ", stale));
     }

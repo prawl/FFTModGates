@@ -25,7 +25,6 @@ internal sealed class Rules
     public string[] FenceExemptFiles { get; init; } = Array.Empty<string>();
     public string Baselines { get; init; } = "docs/health";
     public Dictionary<string, string> NoSummaryExempt { get; init; } = new();
-    public Dictionary<string, int> SilentCatchAllowlist { get; init; } = new();
     public Dictionary<string, string> ImageAllowlist { get; init; } = new(StringComparer.OrdinalIgnoreCase);
     public Dictionary<string, string> PinTables { get; init; } = new(StringComparer.OrdinalIgnoreCase);
     public Dictionary<string, string> Pins { get; init; } = new();

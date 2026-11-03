@@ -32,10 +32,17 @@ How it runs, so nobody has to remember it:
     A repo with no committed memory is refused until its first floor is committed.
   * `floor` snapshots the working tree between releases, so an improvement holds from the day it
     lands. A floor only moves the good way.
+  * The ratchet also holds every production file to its own row in docs/health/files.json, which
+    `floor --write` writes: comment lines, longest comment block, code lines, silent catches and
+    long methods. Comments and the block are frozen at the row. Code lines may grow up to 200,
+    catches and long methods not at all, and a file already over one of those lines carries the
+    debt as its row, which only shrinks. A file with no row is new (a rename counts as new) and
+    meets the full rule. The parts of a partial type are summed under one row, so a split with no
+    real seam cannot pass. A row the tree has moved below must be committed before a build passes.
 
 Where things are comes from rules.json at the repo root (prod, tests, modConfig, devDefine,
-healthDir, healthMd). The repo root is the first folder above this script that holds a .git entry,
-or the one named with --repo.
+healthDir, healthMd, ticketPrefix). The repo root is the first folder above this script that holds
+a .git entry, or the one named with --repo.
 
 Usage:
   python gates/tools/health.py report --version 2.4.0 --write     # write the record and rebuild HEALTH.md
@@ -43,7 +50,7 @@ Usage:
   python gates/tools/health.py report --version 2.3.4 --ref v2.3.4 --write   # backfill an old release
   python gates/tools/health.py status [--committed] [--strict]    # the reminder; --strict exits 1
   python gates/tools/health.py ratchet                            # exit 1 when the working tree is worse than the best record
-  python gates/tools/health.py floor --write                      # record today's numbers as the floor
+  python gates/tools/health.py floor --write                      # record today's numbers as the floor and the file rows
   python gates/tools/health.py --selftest
 """
 import argparse
@@ -70,9 +77,24 @@ DEV_DEFINE = None
 SCRIPT = "tools/health.py"
 SWEEP = 8
 LONG_METHOD = 60
-# The owner's refactor trigger for a production file. Test files are exempt.
+# The line a production file may not cross. Test files are exempt.
 LONG_FILE = 200
 DUP_WINDOW = 8
+TICKET_PREFIX = "XX"
+
+# The per-file rows. A column with a line is held to the higher of the line and the row, so a file
+# under the line may grow up to it. A column with no line is frozen at its row.
+FILE_COLUMNS = ("comments", "block", "code", "catches", "long_methods")
+FILE_LINES = {"comments": None, "block": None, "code": LONG_FILE, "catches": 0, "long_methods": 0}
+FILE_LABELS = {"comments": "comment lines", "block": "longest comment block", "code": "code lines",
+               "catches": "silent catches", "long_methods": "methods over %d code lines" % LONG_METHOD}
+# What a file with no row must meet. Comments at most this share of code, no block over this.
+NEW_COMMENT_SHARE = 1 / 3
+NEW_BLOCK = 8
+FILES_FILE = "files.json"
+TYPE_DECL = re.compile(
+    r"^\s*(?:(?:public|internal|private|protected|static|sealed|abstract|unsafe|readonly|ref|file|new)\s+)*"
+    r"(partial\s+)?(?:class|struct|interface|enum|record(?:\s+(?:class|struct))?)\s+(\w+)")
 
 FIX = re.compile(
     r"^(Stop|Fix|Correct|Restore|Guard|Prevent|Re-anchor|Repair|Revert|Undo)\b"
@@ -99,9 +121,11 @@ def find_repo(start):
 
 def configure(repo):
     """Point every folder name at the repo's rules.json. Keys left out keep the defaults above."""
-    global REPO, PROD, TESTS, HEALTH_MD, HEALTH_DIR, MOD_CONFIG, DEV_DEFINE, SCRIPT
+    global REPO, PROD, TESTS, HEALTH_MD, HEALTH_DIR, MOD_CONFIG, DEV_DEFINE, SCRIPT, TICKET_PREFIX
     REPO = os.path.abspath(repo)
     SCRIPT = os.path.relpath(os.path.abspath(__file__), REPO).replace(os.sep, "/")
+    if SCRIPT.startswith(".."):
+        SCRIPT = os.path.abspath(__file__)
     path = os.path.join(REPO, RULES_FILE)
     if not os.path.isfile(path):
         raise RuntimeError("%s has no %s" % (REPO, RULES_FILE))
@@ -116,6 +140,7 @@ def configure(repo):
     HEALTH_DIR = rules.get("healthDir", HEALTH_DIR)
     MOD_CONFIG = rules.get("modConfig", MOD_CONFIG)
     DEV_DEFINE = rules.get("devDefine")
+    TICKET_PREFIX = rules.get("ticketPrefix", TICKET_PREFIX)
 
 
 def git(*args, check=True):
@@ -575,6 +600,147 @@ def worktree_files():
     return files
 
 
+def measure_file(text):
+    """One file's row. A blank line neither counts nor breaks a comment block, the same as the test."""
+    comments = block = run = code = 0
+    for line in text.split("\n"):
+        if not line.strip():
+            continue
+        if is_comment(line):
+            comments += 1
+            run += 1
+            block = max(block, run)
+        else:
+            code += 1
+            run = 0
+    return {"comments": comments, "block": block, "code": code,
+            "catches": len(EMPTY_CATCH.findall(text)),
+            "long_methods": sum(1 for _, n in method_lengths(text) if n > LONG_METHOD)}
+
+
+def partial_type(text):
+    """The type name when the file's first type declaration is partial, else None."""
+    for line in text.split("\n"):
+        if is_comment(line):
+            continue
+        m = TYPE_DECL.match(line)
+        if m:
+            return m.group(2) if m.group(1) else None
+    return None
+
+
+def file_rows(prod):
+    """One row per production file, the parts of a partial type summed under one row.
+
+    Returns (rows, members). rows maps a key to its row and members a key to the files behind it.
+    A key is the path below the production folder, or "partial <Type>" for the parts of a type."""
+    rows, members = {}, collections.OrderedDict()
+    for path in sorted(prod):
+        rel = path[len(PROD):]
+        name = partial_type(prod[path])
+        key = "partial " + name if name else rel
+        row = measure_file(prod[path])
+        members.setdefault(key, []).append(rel)
+        if key in rows:
+            for col in FILE_COLUMNS:
+                rows[key][col] = max(rows[key][col], row[col]) if col == "block" else rows[key][col] + row[col]
+        else:
+            rows[key] = row
+    return rows, members
+
+
+def rows_record(rows):
+    return {"columns": list(FILE_COLUMNS), "files": {k: [rows[k][c] for c in FILE_COLUMNS] for k in sorted(rows)}}
+
+
+def dump_rows(rec):
+    """The files record as JSON with one row per line, so a diff shows the file that moved."""
+    head = {k: v for k, v in rec.items() if k != "files"}
+    lines = [json.dumps(k) + ": " + json.dumps(v) for k, v in rec["files"].items()]
+    body = json.dumps(head, indent=1)[:-2] + ",\n \"files\": {\n  " + ",\n  ".join(lines) + "\n }\n}\n"
+    return body
+
+
+def rows_of(rec):
+    """The rows in a files record as {key: {column: value}}, by the column names the record carries."""
+    if not rec:
+        return {}
+    cols = rec.get("columns", list(FILE_COLUMNS))
+    return {k: dict(zip(cols, v)) for k, v in rec.get("files", {}).items()}
+
+
+def load_rows(ref=None):
+    """The file rows from the working tree, or from a git ref; an empty dict when there is no record."""
+    if ref is None:
+        path = os.path.join(REPO, HEALTH_DIR, FILES_FILE)
+        if not os.path.isfile(path):
+            return {}
+        with open(path, encoding="utf-8") as h:
+            return rows_of(json.load(h))
+    text = read_at(ref, HEALTH_DIR + "/" + FILES_FILE)
+    return rows_of(json.loads(text)) if text else {}
+
+
+def best_rows(records):
+    """Per key and column, the lowest value any of the given row sets holds."""
+    best = {}
+    for rows in records:
+        for key, row in rows.items():
+            mine = best.setdefault(key, {})
+            for col, v in row.items():
+                if col not in mine or v < mine[col]:
+                    mine[col] = v
+    return best
+
+
+def row_limit(col, row):
+    line = FILE_LINES[col]
+    return row[col] if line is None else max(line, row[col])
+
+
+def describe(key, members):
+    files = members.get(key) if members else None
+    return "%s (%s)" % (key, ", ".join(files)) if files and (len(files) > 1 or files[0] != key) else key
+
+
+def file_problems(now, base, members=None):
+    """The files over their row, or new and over the rule, as sentences."""
+    out = []
+    for key in sorted(now):
+        row, name = now[key], describe(key, members)
+        if key in base:
+            for col in FILE_COLUMNS:
+                if col in base[key] and row[col] > row_limit(col, base[key]):
+                    out.append("%s has %d %s, its row allows %d" % (name, row[col], FILE_LABELS[col], row_limit(col, base[key])))
+            continue
+        tag = "%s is new, or renamed, which counts as new, and" % name
+        if row["code"] and row["comments"] / row["code"] > NEW_COMMENT_SHARE:
+            out.append("%s has %d comment lines over %d code lines, the rule is one in three" % (tag, row["comments"], row["code"]))
+        if row["block"] > NEW_BLOCK:
+            out.append("%s has a comment block of %d lines, the rule is %d" % (tag, row["block"], NEW_BLOCK))
+        for col in ("code", "catches", "long_methods"):
+            if row[col] > FILE_LINES[col]:
+                out.append("%s has %d %s, the rule is %d" % (tag, row[col], FILE_LABELS[col], FILE_LINES[col]))
+    return out
+
+
+def rows_to_commit(now, head, members=None):
+    """The rows the committed record must take before a build passes: a shrink, a new file, a gone file."""
+    out = []
+    for key in sorted(now):
+        if key not in head:
+            out.append("%s has no committed row yet" % describe(key, members))
+        elif any(row_limit(c, now[key]) < row_limit(c, head[key]) for c in FILE_COLUMNS if c in head[key]):
+            out.append("%s shrank, its new row is %s" % (describe(key, members), json.dumps([now[key][c] for c in FILE_COLUMNS])))
+    for key in sorted(set(head) - set(now)):
+        out.append("%s is gone, drop its row" % key)
+    return out
+
+
+def commit_hint():
+    return "Run: python %s floor --write, then commit %s/%s with this change." % (SCRIPT, HEALTH_DIR, FILES_FILE)
+
+
 FLOOR_FILE = "floor.json"
 
 
@@ -651,13 +817,36 @@ def cmd_ratchet(args):
                       "Run: python %s floor --write, then commit it with this change." % SCRIPT], warn=True))
         return 1
     base, origin = best_base(records, floors)
-    problems = ratchet_problems(base, snapshot(worktree_files()), origin)
+    files = worktree_files()
+    problems = ratchet_problems(base, snapshot(files), origin)
     against = ", ".join(sorted(set(origin.values())))
     if problems:
         print(banner(["CODE HEALTH RATCHET: worse than the best committed value"] + problems
                      + ["Fix the code, or write a new record on purpose and say why in the commit."], warn=True))
         return 1
     print("  -> Code health ratchet: no measure worse than the best committed value (%s)." % against)
+    return ratchet_files(files, args.base)
+
+
+def ratchet_files(files, base_ref):
+    """The per-file half of the ratchet. Every row is judged against the lowest committed value,
+    and a row the tree has moved below must be committed before the build passes."""
+    head = load_rows("HEAD")
+    committed = [head] + ([load_rows(base_ref)] if base_ref else [])
+    now, members = file_rows({p: t for p, t in files.items() if p.startswith(PROD)})
+    if not any(committed):
+        print(banner(["CODE HEALTH RATCHET: no file rows committed yet", commit_hint()], warn=True))
+        return 1
+    over = file_problems(now, best_rows(committed), members)
+    if over:
+        print(banner(["CODE HEALTH RATCHET: a file is over its row"] + over
+                     + ["Fix the code, or let the owner widen the row with floor --allow-worse and say why in the commit."], warn=True))
+        return 1
+    pending = rows_to_commit(now, head, members)
+    if pending:
+        print(banner(["CODE HEALTH RATCHET: file rows to commit"] + pending + [commit_hint()], warn=True))
+        return 1
+    print("  -> Code health ratchet: %d file rows hold, none over its row." % len(now))
     return 0
 
 
@@ -675,10 +864,14 @@ def cmd_floor(args):
     """Snapshot the working tree as the floor record, so today's numbers hold until a release record betters them."""
     sha = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=REPO, capture_output=True, text=True).stdout.strip()
     dirty = subprocess.run(["git", "status", "--porcelain"], cwd=REPO, capture_output=True, text=True).stdout.strip() != ""
-    rec = {"sha": sha, "date": time.strftime("%Y-%m-%d"), "dirty": dirty, "snapshot": snapshot(worktree_files())}
+    files = worktree_files()
+    rec = {"sha": sha, "date": time.strftime("%Y-%m-%d"), "dirty": dirty, "snapshot": snapshot(files)}
+    per_file, members = file_rows({p: t for p, t in files.items() if p.startswith(PROD)})
     rows = floor_rows(rec)
     best, origin = best_base(load_records("HEAD"), load_floor("HEAD"))
-    worse = floor_regressions(rec["snapshot"], best, origin)
+    head_rows = load_rows("HEAD")
+    # The first rows are the line in the sand, so a file already over a line is taken as its debt.
+    worse = floor_regressions(rec["snapshot"], best, origin) + (file_problems(per_file, head_rows, members) if head_rows else [])
     if worse and not args.allow_worse:
         print(banner(["CODE HEALTH FLOOR REFUSED: a floor only moves the good way"] + worse
                      + ["Fix the code, or pass --allow-worse with the owner's say and name it in the commit."], warn=True))
@@ -686,13 +879,17 @@ def cmd_floor(args):
     if worse:
         rec["allowed_worse"] = worse
         rows.append("Allowed worse by the owner: " + "; ".join(worse))
+    debt = sorted(k for k, r in per_file.items() if any(FILE_LINES[c] is not None and r[c] > FILE_LINES[c] for c in FILE_COLUMNS))
+    rows.append("file rows: %d, over the line: %s" % (len(per_file), ", ".join(debt) if debt else "none"))
     if args.write:
         os.makedirs(os.path.join(REPO, HEALTH_DIR), exist_ok=True)
-        path = os.path.join(REPO, HEALTH_DIR, FLOOR_FILE)
-        with open(path, "w", encoding="utf-8", newline="\n") as h:
+        files_rec = dict({"sha": sha, "date": rec["date"]}, **rows_record(per_file))
+        with open(os.path.join(REPO, HEALTH_DIR, FLOOR_FILE), "w", encoding="utf-8", newline="\n") as h:
             json.dump(rec, h, indent=1)
             h.write("\n")
-        rows.append("Wrote %s/%s. Commit it with the change that earned it." % (HEALTH_DIR, FLOOR_FILE))
+        with open(os.path.join(REPO, HEALTH_DIR, FILES_FILE), "w", encoding="utf-8", newline="\n") as h:
+            h.write(dump_rows(files_rec))
+        rows.append("Wrote %s/%s and %s. Commit them with the change that earned them." % (HEALTH_DIR, FLOOR_FILE, FILES_FILE))
     print(banner(rows, warn=False))
     return 0
 
@@ -788,6 +985,38 @@ def selftest():
     check("ratchet flags a new long file", any("files over" in p for p in ratchet_problems(base, dict(base, long_files=1))))
     older = {k: v for k, v in base.items() if k != "long_files"}
     check("ratchet skips a row the base record does not hold", not ratchet_problems(older, dict(base, long_files=5)))
+    m = measure_file("// one\n\n// two\nint a;\n/* x */\n/* y */\n/* z */\nint b; // tail\ntry { } catch { }\n")
+    check("a file row counts comments, the longest block across a blank line, code and catches",
+          (m["comments"], m["block"], m["code"], m["catches"]) == (5, 3, 3, 1))
+    check("a file row counts a long method", measure_file(long_body)["long_methods"] == 1 and measure_file(ctor)["long_methods"] == 0)
+    check("a partial class names its type", partial_type("// partial class Lie\nnamespace N;\ninternal sealed partial class Driver<T>\n{\n}") == "Driver")
+    check("a partial record struct names its type", partial_type("public readonly partial record struct Pt(int X);") == "Pt")
+    check("a plain class is not partial", partial_type("namespace N;\npublic static class Util\n{\n  partial void Hook();\n}") is None)
+    check("a file with no type is not partial", partial_type("global using System;\n") is None)
+    half = "public partial class Big\n{\n" + "".join("  int f%d;\n" % i for i in range(150)) + "}\n"
+    tree = {PROD + "Big.cs": half, PROD + "Sub/Big.More.cs": "// a\n// b\n" + half, PROD + "Util.cs": "class Util { }\n"}
+    rows, members = file_rows(tree)
+    check("partial parts sum under the type and keep their files", rows["partial Big"]["code"] == 306 and rows["partial Big"]["comments"] == 2
+          and members["partial Big"] == ["Big.cs", "Sub/Big.More.cs"] and rows["Util.cs"]["code"] == 1)
+    check("a split with no seam fails as one new file", any("partial Big (Big.cs, Sub/Big.More.cs) is new" in p and "306 code lines" in p
+                                                             for p in file_problems(rows, {}, members)))
+    check("a new file inside the rule only needs its row", not file_problems({"Util.cs": rows["Util.cs"]}, {})
+          and rows_to_commit({"Util.cs": rows["Util.cs"]}, {}) == ["Util.cs has no committed row yet"])
+    held = {"A.cs": {"comments": 10, "block": 4, "code": 150, "catches": 1, "long_methods": 1}}
+    grow = lambda **kw: {"A.cs": dict(held["A.cs"], **kw)}
+    check("one more comment line fails", file_problems(grow(comments=11), held) == ["A.cs has 11 comment lines, its row allows 10"])
+    check("a longer comment block fails", any("block" in p for p in file_problems(grow(block=5), held)))
+    check("code may grow up to the line", not file_problems(grow(code=200), held) and file_problems(grow(code=201), held))
+    check("a new silent catch or long method fails", file_problems(grow(catches=2), held) and file_problems(grow(long_methods=2), held))
+    check("a row above the line is debt that only shrinks", file_problems(grow(code=260), {"A.cs": dict(held["A.cs"], code=250)}))
+    check("a shrink must be committed and prints the new row", rows_to_commit(grow(comments=9), held) == ["A.cs shrank, its new row is [9, 4, 150, 1, 1]"])
+    check("code falling under the line is not a shrink to commit", not rows_to_commit(grow(code=140), held))
+    check("debt paid down is a shrink to commit", rows_to_commit(grow(code=240), {"A.cs": dict(held["A.cs"], code=250)}))
+    check("a gone file's row must be dropped", rows_to_commit({}, held) == ["A.cs is gone, drop its row"])
+    check("the lowest committed value wins across refs", best_rows([held, grow(comments=8, code=300)])["A.cs"] == dict(held["A.cs"], comments=8))
+    check("a files record round trips by column name", rows_of(rows_record(held)) == held and rows_of(None) == {})
+    dumped = dump_rows(dict({"sha": "abc", "date": "2026-11-02"}, **rows_record(dict(held, **grow(comments=9)))))
+    check("a files record is written one row per line", json.loads(dumped)["files"]["A.cs"] == [9, 4, 150, 1, 1] and '"A.cs": [9, 4, 150, 1, 1]' in dumped)
     passed = sum(ok for _, ok in cases)
     for name, ok in cases:
         if not ok:
