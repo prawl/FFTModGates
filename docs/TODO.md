@@ -19,6 +19,13 @@ gate lives in docs/RELEASE_SCOPE.md.
     session.)
   - Verify: the table names Treasure Master at v0.1.0 with its hookup commit and gains a row with
     each later hookup; Check.ps1 passes with the table in place.
+- **[MG-15] Keep the rulebook quiet when a mod's own tests load the gate script** (opened 2026-11-03) [BUILDING]
+  - Done means: loading gates.ps1 prints nothing, and the line naming the rulebook version moves
+    into the first gate, so a mod test that dot-sources its pipeline script and reads the output
+    gets its answer and not the banner. Living Weapons has nine such tests. (Tech: the Write-Host
+    moves from the file body into Invoke-ManifestGate; VERSION 0.1.1; tag v0.1.1.)
+  - Verify: Check.ps1 green and its log still names the version from the manifest gate; the nine
+    Living Weapons tests pass on the v0.1.1 subtree.
 
 ## Backlog
 

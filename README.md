@@ -29,7 +29,7 @@ Everything below is one commit. No gameplay code moves.
    extra and the mod decides when it moves:
 
    ```
-   git subtree add --prefix gates https://github.com/prawl/FFTModGates.git v0.1.0 --squash
+   git subtree add --prefix gates https://github.com/prawl/FFTModGates.git v0.1.1 --squash
    ```
 
 2. Add `rules.json` at the repo root. Three readers parse it, the gate script, health.py and the
