@@ -10,15 +10,16 @@ gate lives in docs/RELEASE_SCOPE.md.
 
 ## Now (release: 0.1)
 
-- **[MG-7] Track which mods are on the shared rules so the paydown can start when all five are** (opened 2026-11-02) [BUILDING]
-  - Done means: one place in this repo says which mod runs which rulebook version and since when,
-    so anyone can see when the last mod is in and the paydown of the recorded debt can begin.
-    Order after Treasure Master, on v0.1.0 since 2026-11-03: Living Weapons, Offensive Chemist,
-    Color Customizer, and the private mod once its open branch lands. (Tech: a table in README.md
-    with mod, version taken, date and hookup commit; each hookup updates its row in the same
-    session.)
-  - Verify: the table names Treasure Master at v0.1.0 with its hookup commit and gains a row with
-    each later hookup; Check.ps1 passes with the table in place.
+- **[MG-14] Let the pre-commit hook write the file rows, so nobody runs floor --write by hand** (opened 2026-11-02) [QUEUED]
+  - Done means: when a commit touches production code in a repo that has rules.json, the
+    shared pre-commit hook runs health.py floor --write and stages docs/health/files.json and
+    floor.json, so a shrink, a new file or a gone file never reaches the ratchet unrecorded. A
+    worse floor still refuses, with the confession row, since widening stays the owner's call.
+    (Tech: the pre-commit in the setup repo; floor --write exits 1 on a worse floor, which
+    refuses the commit; the two files are added to the index after a successful write.)
+  - Verify: in a scratch repo on the rulebook, a commit that shrinks a file lands with the
+    updated rows staged and the ratchet green right after; a commit that widens a row is
+    refused with the row to paste; Check.ps1 green here.
 
 ## Backlog
 
@@ -26,9 +27,6 @@ gate lives in docs/RELEASE_SCOPE.md.
   files hold design notes with em dashes that are not game text.
 - [MG-6] 2026-11-02: Have the shared setup's /gates status print the rulebook version a repo is
   on, so one screen shows both the session gates and the build gates.
-- [MG-14] 2026-11-02: Have the pre-commit hook write the file rows, so nobody runs floor --write
-  by hand and a shrink is never left for the ratchet to ask about. (Tech: the shared pre-commit in
-  the setup repo runs health.py floor --write when rules.json is present and stages files.json.)
 
 ## Walled (blocked by engine / external)
 

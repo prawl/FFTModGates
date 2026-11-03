@@ -8,6 +8,11 @@ with a date and no hash.
 
 ## 0.1 cycle
 
+- [MG-7] SHIPPED 17fee2d 2026-11-03: The README now says which mod runs which rulebook version
+  since when, with its hookup commit, so anyone can see when the last mod is in and the paydown
+  of the recorded debt can begin. Treasure Master is on v0.1.0 and Living Weapons on v0.1.1;
+  Offensive Chemist, Color Customizer and the private mod are not yet. (Tech: the Who is on it
+  table in README.md; each hookup updates its row in the same session.)
 - [MG-16] SHIPPED 51d20d5 2026-11-03: A mod that already had months of release records can
   now take the rulebook without being told its code is worse than its best month. The first
   floor is the line in the sand, and older records feed the trend but never set a bar. Living
