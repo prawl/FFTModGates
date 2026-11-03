@@ -37,6 +37,7 @@ class Repo:
             rules = json.load(h)
         self.prod, self.tests = rules["prod"].strip("/") + "/", rules["tests"].strip("/") + "/"
         self.py_prod = [f.strip("/") + "/" for f in rules.get("pythonProd", [])]
+        self.em_dash = [e.strip("/") + ("/" if os.path.isdir(os.path.join(root, e.strip("/"))) else "") for e in rules.get("emDashScope", [])]
         self.prefix, self.exempt = rules.get("ticketPrefix", "XX"), rules.get("noSummaryExempt", {})
         self.pruned = PRUNED | set(rules.get("prunedDirs", []))
         base = os.path.join(root, rules.get("baselines", "docs/health"))
@@ -73,10 +74,15 @@ class Repo:
         out |= set(self.walk("docs", ".md", deep=False)) | {"README.md"}
         for folder in self.py_prod:
             out |= set(self.walk(folder, ".py"))
+        for entry in self.em_dash:
+            out |= set(self.walk(entry, "")) if entry.endswith("/") else {entry}
         return sorted(r for r in out if os.path.isfile(os.path.join(self.root, r)))
 
     def python_prod(self, rel):
         return rel.endswith(".py") and any(rel.startswith(f) for f in self.py_prod)
+
+    def in_em_dash_scope(self, rel):
+        return any(rel == e or (e.endswith("/") and rel.startswith(e)) for e in self.em_dash)
 
     def row_key(self, rel):
         name = partial_type(self.text(rel))
@@ -111,7 +117,11 @@ def budget(repo, rel, python=False):
 
 def scan_file(repo, rel):
     text, name = repo.text(rel), os.path.basename(rel)
+    if "\0" in text:
+        return
     lines = text.split("\n")
+    if repo.in_em_dash_scope(rel):
+        yield from ((n, "an em dash inside the repo's em dash scope; write a comma or a period") for n, l in enumerate(lines, 1) if "\u2014" in l)
     prod, tests, py = rel.startswith(repo.prod), rel.startswith(repo.tests), repo.python_prod(rel)
     under_tools, top = rel.startswith("tools/"), "/" not in rel
     if (rel.endswith(".cs") and prod) or py:
@@ -139,7 +149,7 @@ def scan_file(repo, rel):
         if len(over) > frozen:
             yield from ((n, "prose line over %d characters, %d of them against %d frozen; %s" % (WIDTH, len(over), frozen, STYLE_HINT)) for n in over)
         if name in ("TODO.md", "CHANGELOG.md"):
-            yield from ((n, "an em dash or a double dash separator in the ledger") for n, l in enumerate(lines, 1) if "—" in l or " -- " in l)
+            yield from ((n, "an em dash or a double dash separator in the ledger") for n, l in enumerate(lines, 1) if "\u2014" in l or " -- " in l)
 
 
 def main(argv):

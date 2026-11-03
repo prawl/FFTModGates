@@ -233,14 +233,6 @@ def function_lengths(text):
     return out
 
 
-def lengths(path, text):
-    return function_lengths(text) if path.endswith(".py") else method_lengths(text)
-
-
-def silent_catches(path, text):
-    return (SILENT_EXCEPT if path.endswith(".py") else EMPTY_CATCH).findall(text)
-
-
 def method_lengths(text):
     """Code-line length of each method and constructor body, by brace matching."""
     lines = text.split("\n")
@@ -336,7 +328,7 @@ def snapshot(files):
     prod_lines = sum(len(t.split("\n")) for t in prod.values())
     test_lines = sum(len(t.split("\n")) for t in tests.values())
     comments = sum(sum(1 for l in t.split("\n") if is_comment(l, py(p))) for p, t in prod.items())
-    methods = [n for p, t in prod.items() for _, n in lengths(p, t)]
+    methods = [n for p, t in prod.items() for _, n in (function_lengths(t) if py(p) else method_lengths(t))]
     return {
         "prod_files": len(prod),
         "prod_lines": prod_lines,
@@ -345,7 +337,7 @@ def snapshot(files):
         "test_lines": test_lines,
         "test_ratio": round(test_lines / prod_lines, 2) if prod_lines else 0,
         "comment_share": round(comments / prod_lines, 3) if prod_lines else 0,
-        "empty_catches": sum(len(silent_catches(p, t)) for p, t in prod.items()),
+        "empty_catches": sum(len((SILENT_EXCEPT if py(p) else EMPTY_CATCH).findall(t)) for p, t in prod.items()),
         "catches": sum(len((CATCH_PY if py(p) else CATCH).findall(t)) for p, t in prod.items()),
         "methods": len(methods),
         "long_methods": sum(1 for n in methods if n > LONG_METHOD),
@@ -927,16 +919,17 @@ def confession():
 
 
 def valid_allowances(rec, ref):
-    """The keys a record widened under a card that is a row of the ledger at ref, and a note per card that is not."""
+    """The keys a record widened under a card that is a row of the ledger at ref, the changelog included
+    so a shipped card still explains its widening, and a note per card that is not."""
     allowed, notes = {}, []
-    todo = None
+    ledger = None
     for key, card in (rec or {}).get("allowed", {}).items():
-        if todo is None:
-            todo = ledger_text(TODO_FILE, ref)
-        if has_card(todo, card):
+        if ledger is None:
+            ledger = ledger_text(TODO_FILE, ref) + ledger_text(CHANGELOG_FILE, ref)
+        if has_card(ledger, card):
             allowed[key] = card
         else:
-            notes.append("%s was widened under %s, which is not a row in %s at %s; the allowance is ignored." % (key, card, TODO_FILE, ref))
+            notes.append("%s was widened under %s, which is not a row of the ledger at %s; the allowance is ignored." % (key, card, ref))
     return allowed, notes
 
 
@@ -1232,6 +1225,7 @@ def selftest():
     check("a bold Now card and a Backlog row are cards, a mention in prose is not",
           has_card(ledger, "ZZ-3") and has_card(ledger, "ZZ-11") and not has_card(ledger, "ZZ-1") and not has_card(ledger, "ZZ-5"))
     check("the next id follows the highest one in the ledger", next_id(ledger + "[QQ-40]", "ZZ") == "ZZ-12" and next_id("", "ZZ") == "ZZ-1")
+    check("a shipped card is still a card", has_card("- [ZZ-4] SHIPPED abc1234 2026-11-03: done.\n", "ZZ-4"))
     recs = [{"version": "1.0.0", "snapshot": {"empty_catches": 2, "long_methods": 1}}]
     hf = {"sha": "h", "snapshot": {"empty_catches": 3, "long_methods": 1}, "allowed": {"empty_catches": "ZZ-9"}}
     bf = {"sha": "b", "where": "origin/main", "snapshot": {"empty_catches": 2, "long_methods": 0}}

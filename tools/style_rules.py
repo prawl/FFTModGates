@@ -96,7 +96,7 @@ def measure(text, python=False):
         body = re.sub(r"<[^>]+>|\"[^\"]*\"|`[^`]*`", "#", ctext)
         body = re.sub(r"\b0x[0-9A-Fa-f]+\b|\b\d+:\d+\b|\b[\w.]+\.(cs|py|md|ps1):\d+", "#", body)
         prose = re.sub(r"^(?:///|//|/\*|\*|#)\s*-\s", "", body)
-        what = ["a colon"] * len(re.findall(r"\w: ", body)) + ["a dash"] * len(re.findall(r"(?<=[A-Za-z0-9)]) - (?=[A-Za-z0-9(])|—| -- ", prose))
+        what = ["a colon"] * len(re.findall(r"\w: ", body)) + ["a dash"] * len(re.findall(r"(?<=[A-Za-z0-9)]) - (?=[A-Za-z0-9(])|\u2014| -- ", prose))
         hits += [(n, "%s inside a comment sentence (the owner writes neither)" % w) for w in what]
         hits += [(n, "the tell '%s' in a comment; a comment says what the code does or why, it never argues" % t) for t in TELL.findall(body)]
     return comment, code, block, hits

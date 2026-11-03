@@ -8,6 +8,18 @@ with a date and no hash.
 
 ## 0.2 cycle
 
+- [MG-18] SHIPPED ef3027b 2026-11-03: Shipping the last card in Now no longer fails the ledger
+  test, so nobody has to invent a next card at every last exit. The owner ruled so on
+  2026-11-03, once the reason behind the refusal turned out to be written nowhere. The cap of
+  five and every other rule stay. (Tech: the NotEmpty assertion left TodoContractTests; the
+  Format section says Now may stand empty; the global CLAUDE.md dropped its sentence; every
+  repo on the rulebook takes the change at its next subtree pull.)
+- [MG-6] SHIPPED ef3027b 2026-11-03: One screen now shows both the session gates and the build
+  gates. The /gates table has a rulebook row with the version a repo carries, whether the
+  pre-commit rows step and the style scan hook are live there, and the scan's last hit; the
+  session start line names the version too. Its first live run showed Color Customizer with no
+  shared pre-commit shim. (Tech: rulebook_version and rulebook in the shared setup's gates.py,
+  reading gates/VERSION in a mod or VERSION in this repo; five tests in test_gates.py.)
 - [MG-17] SHIPPED a1de979 2026-11-03: A mod written in Python can now be held to the same rules
   as a C# mod. A repo lists the folders in rules.json and every .py under them, tools/lib
   included, gets a row with the 200 line gate, the comment budget, the silent except and

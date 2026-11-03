@@ -1,5 +1,5 @@
 {
- "sha": "625776e",
+ "sha": "ef3027b",
  "date": "2026-11-03",
  "columns": [
   "comments",
@@ -15,9 +15,9 @@
   "ModLogger.cs": [9, 4, 52, 0, 0],
   "NullLogger.cs": [1, 1, 13, 0, 0],
   "ScopedLogger.cs": [5, 4, 27, 0, 0],
-  "tools/health.py": [16, 2, 1115, 0, 1],
+  "tools/health.py": [16, 2, 1113, 0, 1],
   "tools/manifest.py": [1, 1, 83, 0, 0],
   "tools/style_rules.py": [1, 1, 136, 0, 0],
-  "tools/style_scan.py": [1, 1, 144, 0, 0]
+  "tools/style_scan.py": [1, 1, 153, 0, 0]
  }
 }

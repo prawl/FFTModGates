@@ -10,15 +10,6 @@ gate lives in docs/RELEASE_SCOPE.md.
 
 ## Now (release: 0.2)
 
-- **[MG-18] Let Now go empty** (opened 2026-11-03) [QUEUED]
-  - Done means: shipping the last card in Now no longer fails the ledger test, so the owner is
-    not made to invent a next card at every last exit. The owner ruled so on 2026-11-03 after
-    the reason behind the refusal turned out to be written nowhere. The cap of five and every
-    other rule stay. (Tech: the NotEmpty assertion in TodoContractTests goes, and so does the
-    "Now never goes empty" sentence in the global CLAUDE.md; every repo on the rulebook takes
-    the change at its next subtree pull.)
-  - Verify: a scratch ledger with an empty Now passes the ledger test; this repo's own test run
-    is green; the global CLAUDE.md no longer carries the sentence.
 - **[MG-5] Let the em dash ban take a per-repo scope list** (opened 2026-11-02) [QUEUED]
   - Done means: a repo can name the folders and files where an em dash is banned, so the ban
     reaches its code and docs without reaching data files whose design notes are not game
@@ -27,14 +18,14 @@ gate lives in docs/RELEASE_SCOPE.md.
     contract test walks them and names each line; the README key table gains the row.)
   - Verify: a planted em dash in a listed folder fails the test with its file and line; one in
     an unlisted folder passes; Check.ps1 green here with the scope set.
-- **[MG-6] Show the rulebook version on the /gates screen** (opened 2026-11-02) [QUEUED]
-  - Done means: one screen shows both the session gates and the build gates, with the rulebook
-    version a repo is on, where its build gates run, and whether the pre-commit rows step and
-    the style scan hook are live there. (Tech: a rulebook row in the shared setup's gates.py,
-    read from gates/VERSION in a mod or VERSION in the rulebook repo, plus the SessionStart
-    brief line; tests in test_gates.py.)
-  - Verify: /gates in a mod on the rulebook names its version; in a repo off the rulebook the
-    row says so; the brief line at session start carries the version; test_gates.py green.
+- **[MG-25] Keep an owner's widening alive after its card ships** (opened 2026-11-03) [BUILDING]
+  - Done means: a total or a row the owner widened under a card stays widened once that card
+    moves to the changelog, instead of the ratchet going red on the next build against the
+    main branch. Found the moment MG-17 shipped, when the base ref's old floor came back for
+    three totals. (Tech: valid_allowances in health.py reads the card from TODO.md and
+    CHANGELOG.md at the ref, since has_card already matches a SHIPPED row.)
+  - Verify: the ratchet with --base origin/main is green here with MG-17 in the changelog; a
+    selftest case pins that a shipped row counts as a card; Check.ps1 green.
 
 ## Backlog
 

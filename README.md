@@ -49,6 +49,7 @@ Everything below is one commit. No gameplay code moves.
    | `tempPrefixes` | gate script | The temp folder names the repo's tests create |
    | `tempKeep` | gate script | Any fixed temp folder a test rebuilds every run |
    | `loggingDoc` | tests | Optional. The verb table, default `docs/LOGGING.md` |
+   | `emDashScope` | tests | Optional. Folders and files where an em dash fails the style contract; left out, nothing is scanned, so data files with design notes stay out |
 
    ```json
    {

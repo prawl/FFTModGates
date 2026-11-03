@@ -73,7 +73,9 @@
     "shared": "Tests/StyleContractTests.cs",
     "note": "The doc and comment width baselines move out of the test into docs/health/style.json.",
     "renamed": {
-      "+The_repo_copy_of_a_shared_style_file_matches_the_rulebook_byte_for_byte": "the style and line ending files cannot be shared through gates, so the repo's copies are checked against them"
+      "+The_repo_copy_of_a_shared_style_file_matches_the_rulebook_byte_for_byte": "the style and line ending files cannot be shared through gates, so the repo's copies are checked against them",
+      "+Em_dash_lines_are_named_and_a_plain_hyphen_passes": "the em dash ban names each line and never trips on a hyphen or a double dash",
+      "+No_em_dash_inside_the_folders_the_repo_lists_for_the_ban": "a repo lists in rules.json the folders and files its em dash ban covers, so data files with design notes stay out"
     },
     "local": {},
     "wontfix": {}
