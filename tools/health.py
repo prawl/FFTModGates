@@ -26,7 +26,10 @@ How it runs, so nobody has to remember it:
   * The same gate calls `ratchet` on every build: the working tree's snapshot against the best
     committed record. Silent catches, long methods, long files and repeated code may not rise, and
     the test ratio may not fall; a build that makes one of them worse is refused, the same as a red
-    test. A row the newest record does not hold yet is not judged until a release writes it.
+    test. A row the newest record does not hold yet is not judged until a release writes it. The
+    bar is read from the last commit, never from the working copy, and `--base` adds a second ref
+    (the main branch, or the commit a push started from) so an edit to the memory cannot lower it.
+    A repo with no committed memory is refused until its first floor is committed.
   * `floor` snapshots the working tree between releases, so an improvement holds from the day it
     lands. A floor only moves the good way.
 
@@ -331,14 +334,29 @@ def build_record(version, ref):
     }
 
 
-def load_records(base=None):
-    folder = os.path.join(base or REPO, HEALTH_DIR)
+def read_at(ref, relpath):
+    """A file's text at a git ref, or None when the ref or the file is not there."""
+    out = subprocess.run(["git", "-C", REPO, "show", "%s:%s" % (ref, relpath)], capture_output=True)
+    return out.stdout.decode("utf-8-sig", "replace") if out.returncode == 0 else None
+
+
+def load_records(ref=None):
+    """Release records from the working tree, or from a git ref so an uncommitted edit cannot move the bar."""
     recs = []
-    if os.path.isdir(folder):
-        for name in os.listdir(folder):
+    if ref is None:
+        folder = os.path.join(REPO, HEALTH_DIR)
+        if os.path.isdir(folder):
+            for name in os.listdir(folder):
+                if name.endswith(".json") and vkey(name[:-5]):
+                    with open(os.path.join(folder, name), encoding="utf-8") as h:
+                        recs.append(json.load(h))
+    else:
+        for path in git("ls-tree", "--name-only", ref, HEALTH_DIR + "/", check=False).split():
+            name = os.path.basename(path)
             if name.endswith(".json") and vkey(name[:-5]):
-                with open(os.path.join(folder, name), encoding="utf-8") as h:
-                    recs.append(json.load(h))
+                text = read_at(ref, path)
+                if text:
+                    recs.append(json.loads(text))
     return sorted(recs, key=lambda r: vkey(r["version"]), reverse=True)
 
 
@@ -560,24 +578,28 @@ def worktree_files():
 FLOOR_FILE = "floor.json"
 
 
-def load_floor(base=None):
-    """The floor record, a snapshot taken between releases so an improvement holds from the day it lands; None when absent."""
-    path = os.path.join(base or REPO, HEALTH_DIR, FLOOR_FILE)
-    if not os.path.isfile(path):
-        return None
-    with open(path, encoding="utf-8") as h:
-        return json.load(h)
+def load_floor(ref=None):
+    """The floor record from the working tree, or from a git ref; None when absent."""
+    if ref is None:
+        path = os.path.join(REPO, HEALTH_DIR, FLOOR_FILE)
+        if not os.path.isfile(path):
+            return None
+        with open(path, encoding="utf-8") as h:
+            return json.load(h)
+    text = read_at(ref, HEALTH_DIR + "/" + FLOOR_FILE)
+    return json.loads(text) if text else None
 
 
 def best_base(records, floor):
-    """Per ratchet row, the best value any committed record holds and which record holds it."""
+    """Per ratchet row, the best value any committed record holds and which record holds it. floor may be one record or a list."""
+    floors = floor if isinstance(floor, list) else ([floor] if floor else [])
     base, origin = {}, {}
     for key, label, better_low in RATCHET_ROWS:
-        for rec in list(records) + ([floor] if floor else []):
+        for rec in list(records) + floors:
             v = rec["snapshot"].get(key)
             if v is None:
                 continue
-            name = "v" + rec["version"] if "version" in rec else "floor " + rec["sha"]
+            name = "v" + rec["version"] if "version" in rec else "floor " + rec["sha"] + (" on " + rec["where"] if rec.get("where") else "")
             if key not in base or (v < base[key] if better_low else v > base[key]):
                 base[key], origin[key] = v, name
     return base, origin
@@ -598,13 +620,37 @@ def ratchet_problems(base, now, origin=None):
     return out
 
 
+def ratchet_memory(base_ref):
+    """The committed records and floors the ratchet judges against, plus notes on what it could not read."""
+    records, floors, notes = load_records("HEAD"), [], []
+    head_floor = load_floor("HEAD")
+    if head_floor:
+        floors.append(head_floor)
+    if base_ref:
+        base_floor = load_floor(base_ref)
+        if base_floor:
+            base_floor["where"] = base_ref
+            floors.append(base_floor)
+            records += load_records(base_ref)
+        else:
+            notes.append("No floor readable at %s; judging against HEAD only." % base_ref)
+    if not records and not floors:
+        working = load_floor()
+        if working:
+            floors.append(working)
+            notes.append("The floor is not committed yet; commit %s/%s with this change." % (HEALTH_DIR, FLOOR_FILE))
+    return records, floors, notes
+
+
 def cmd_ratchet(args):
-    records = load_records()
-    floor = load_floor()
-    if not records and not floor:
-        print(banner(["CODE HEALTH RATCHET", "No record to ratchet against. Run: python %s report --write" % SCRIPT], warn=True))
-        return 0
-    base, origin = best_base(records, floor)
+    records, floors, notes = ratchet_memory(args.base)
+    for note in notes:
+        print("  -> " + note)
+    if not records and not floors:
+        print(banner(["CODE HEALTH RATCHET REFUSED: no committed record to judge against",
+                      "Run: python %s floor --write, then commit it with this change." % SCRIPT], warn=True))
+        return 1
+    base, origin = best_base(records, floors)
     problems = ratchet_problems(base, snapshot(worktree_files()), origin)
     against = ", ".join(sorted(set(origin.values())))
     if problems:
@@ -631,7 +677,7 @@ def cmd_floor(args):
     dirty = subprocess.run(["git", "status", "--porcelain"], cwd=REPO, capture_output=True, text=True).stdout.strip() != ""
     rec = {"sha": sha, "date": time.strftime("%Y-%m-%d"), "dirty": dirty, "snapshot": snapshot(worktree_files())}
     rows = floor_rows(rec)
-    best, origin = best_base(load_records(), load_floor())
+    best, origin = best_base(load_records("HEAD"), load_floor("HEAD"))
     worse = floor_regressions(rec["snapshot"], best, origin)
     if worse and not args.allow_worse:
         print(banner(["CODE HEALTH FLOOR REFUSED: a floor only moves the good way"] + worse
@@ -722,6 +768,9 @@ def selftest():
     floor = {"sha": "abc1234", "date": "2026-10-27", "dirty": False, "snapshot": {"empty_catches": 1, "long_methods": 3, "long_files": 0, "duplication": 0.0, "test_ratio": 1.0}}
     best2, origin2 = best_base([rec, old], floor)
     check("a floor record joins the base and wins where it is best", best2["empty_catches"] == 1 and origin2["empty_catches"] == "floor abc1234" and best2["long_methods"] == 1)
+    base_floor = dict(floor, sha="b2b2b2b", where="origin/main", snapshot=dict(floor["snapshot"], long_methods=0))
+    best3, origin3 = best_base([rec], [floor, base_floor])
+    check("a floor on the base ref joins the base too and names where it came from", best3["long_methods"] == 0 and origin3["long_methods"] == "floor b2b2b2b on origin/main")
     check("a rise above the best value names where the best was set", any("in floor abc1234" in p for p in ratchet_problems(best2, dict(best2, empty_catches=2), origin2)))
     check("the floor banner names the commit and every ratchet row", floor_rows(floor)[0] == "CODE HEALTH FLOOR at abc1234" and len(floor_rows(floor)) == 1 + len(RATCHET_ROWS))
     check("a floor that would be worse than the best on record is a regression, a better one is not",
@@ -761,7 +810,8 @@ def main():
     sp = sub.add_parser("status")
     sp.add_argument("--committed", action="store_true", help="judge the committed tree, not the working tree")
     sp.add_argument("--strict", action="store_true", help="exit 1 when there is something to remind about")
-    sub.add_parser("ratchet")
+    rt = sub.add_parser("ratchet")
+    rt.add_argument("--base", help="a second ref whose memory also sets the bar, such as origin/main or the commit a push started from")
     fp = sub.add_parser("floor")
     fp.add_argument("--write", action="store_true")
     fp.add_argument("--allow-worse", dest="allow_worse", action="store_true", help="the owner's say that a worse floor is wanted; name it in the commit")

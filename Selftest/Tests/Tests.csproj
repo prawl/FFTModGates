@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <!-- Compiles the shared logger and the shared tests exactly the way a mod's test project does,
-       as linked source, against this repo's own rules.json and ledger. The test code is held to the
-       production standard here, stricter than a mod's test project. -->
+  <!-- Stands in for a mod's test project. The shared tests compile in as linked source, the same
+       line a mod's test csproj carries, against the stand-in mod library. Held to the production
+       standard here, stricter than a mod's test project. -->
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
+    <AssemblyName>Selftest.Tests</AssemblyName>
     <RootNamespace>ModGates.Selftest</RootNamespace>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -19,8 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Logging\*.cs" Link="Logging\%(Filename)%(Extension)" />
-    <Compile Include="..\Tests\**\*.cs" Link="Tests\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="..\..\Tests\**\*.cs" Link="Gates\Tests\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Mod\Mod.csproj" />
   </ItemGroup>
 
   <ItemGroup>

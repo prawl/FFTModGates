@@ -6,6 +6,7 @@ $GatesRepoRoot = $PSScriptRoot
 
 $gateTemp = Enter-GateTemp
 try {
+    Invoke-ManifestGate -FailVerb CHECK
     Invoke-FormatGate -FailVerb CHECK
     Invoke-UnitTestGate -FailVerb CHECK
     Invoke-HealthGate -FailVerb CHECK

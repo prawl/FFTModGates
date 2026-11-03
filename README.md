@@ -2,33 +2,51 @@
 
 One rulebook for every FFT mod. Each mod carries a copy of this folder, runs the same checks on
 every build, and keeps only its own starting numbers. From the day a mod takes it, no number a
-gate measures can get worse.
+gate measures can get worse, and the copy itself cannot drift from what was published.
 
 ## What is in here
 
 | Folder | What it holds | What a mod supplies |
 | --- | --- | --- |
-| `Logging/` | The logger every mod writes through (ILogger, ModLogger, FileConsoleLogger, NullLogger, ScopedLogger), compiled into the mod's own DLL as linked source | Its `LogVerb.cs` in the `ModGates.Logging` namespace, with a `Trace` member |
+| `Logging/` | The logger every mod writes through (ILogger, ModLogger, FileConsoleLogger, NullLogger, ScopedLogger), compiled into the mod's own DLL as linked source | Its `LogVerb.cs` in the `ModGates.Logging` namespace |
 | `Tests/` | The shared contract tests and the helpers they read the repo through, compiled into the mod's test project | Its `rules.json`, baselines and allowlists |
 | `tools/health.py` | The code health report, ratchet and floor | Nothing beyond `rules.json` |
-| `pipeline/gates.ps1` | The gate functions: format, unit tests, health, temp leftovers | Its own gates below the dot-source line |
+| `tools/manifest.py` | The fingerprint list, so the copy cannot drift | Nothing |
+| `pipeline/gates.ps1` | The gate functions: manifest, format, unit tests, health, temp leftovers | Its own gates below the dot-source line |
 | `Directory.Build.targets` | Warnings as errors and code style in the build | One import line |
 | `.editorconfig` | The code style the build enforces | A byte-for-byte copy at its root |
+| `MANIFEST.sha256` | A fingerprint per file, checked on every build | Nothing |
 
-`Selftest/` compiles the package the way a mod does and runs it against this repo's own rules, so
-the package is held to the rules it enforces.
+`Selftest/` holds a stand-in mod library and a stand-in test project, so the package is compiled
+here exactly the way a mod compiles it and is held to the rules it enforces. `docs/merge/`
+records where every rule from the five original copies went.
 
 ## How a mod takes it
 
 Everything below is one commit. No gameplay code moves.
 
-1. Vendor the folder as a subtree, so worktrees and fresh clones need nothing extra:
+1. Vendor the folder as a subtree at a tagged version, so worktrees and fresh clones need nothing
+   extra and the mod decides when it moves:
 
    ```
-   git subtree add --prefix gates https://github.com/prawl/FFTModGates.git main --squash
+   git subtree add --prefix gates https://github.com/prawl/FFTModGates.git v0.1.0 --squash
    ```
 
-2. Add `rules.json` at the repo root:
+2. Add `rules.json` at the repo root. Three readers parse it, the gate script, health.py and the
+   shared tests, so every key is listed here once:
+
+   | Key | Read by | Meaning |
+   | --- | --- | --- |
+   | `prod` | all three | The production code folder |
+   | `tests` | health.py, tests | The test folder |
+   | `ticketPrefix` | gate script, tests | The ledger id prefix |
+   | `projects` | gate script | Every csproj `dotnet format` verifies |
+   | `testProjects` | gate script | Every csproj `dotnet test` runs |
+   | `modConfig` | health.py | The JSON whose `ModVersion` names the release, or a plain file holding the version |
+   | `devDefine` | health.py | Optional. The `#if` that compiles a dev spike out of release builds |
+   | `tempPrefixes` | gate script | The temp folder names the repo's tests create |
+   | `tempKeep` | gate script | Any fixed temp folder a test rebuilds every run |
+   | `loggingDoc` | tests | Optional. The verb table, default `docs/LOGGING.md` |
 
    ```json
    {
@@ -44,11 +62,6 @@ Everything below is one commit. No gameplay code moves.
    }
    ```
 
-   `modConfig` is the JSON file whose `ModVersion` names the release, or a plain file holding the
-   version. `devDefine` is optional and names the `#if` that compiles a dev spike out of release
-   builds. `tempPrefixes` are the temp folder names the repo's tests create; `tempKeep` any fixed
-   one a test rebuilds every run.
-
 3. Compile the logger into the mod and the tests into the test project, as linked source:
 
    ```xml
@@ -63,10 +76,22 @@ Everything below is one commit. No gameplay code moves.
    </ItemGroup>
    ```
 
-   The mod's `LogVerb.cs` moves into the `ModGates.Logging` namespace, one file holds
-   `global using ModGates.Logging;`, and `Mod.cs` calls
-   `ModLogger.Init(modDir, "[Living Weapons]", "livingweapon")`. A mod with a flight recorder
-   passes its flush as the `errorFlush` hook, and one that counts quiet faults passes `faultNote`.
+   The traps the first mod hits, in order:
+
+   - `LogVerb.cs` moves into the `ModGates.Logging` namespace, keeps a `Token()` extension
+     giving each verb its bracket text, carries a `Trace` member, and has at least three
+     members. `Selftest/Mod/LogVerb.cs` is the shape.
+   - One file holds `global using ModGates.Logging;`.
+   - The mod's assembly needs `[assembly: InternalsVisibleTo("<its test assembly>")]`. The logger
+     types are internal.
+   - `Mod.cs` calls `ModLogger.Init(modDir, "[Living Weapons]", "livingweapon")`. A mod with a
+     flight recorder passes its flush as the `errorFlush` hook, and one that counts quiet faults
+     passes `faultNote`.
+   - The test project needs a module initializer that calls `ModLogger.UseNullLogger()` and
+     turns off parallel test classes, since the facade is one static. `Selftest/Tests/TestSetup.cs`
+     is the shape.
+   - A csproj that sits at the repo root globs every `.cs` under it, including `gates/`. Add
+     `<Compile Remove="gates\**" />` to that project.
 
 4. Import the build settings from a root `Directory.Build.targets`:
 
@@ -76,24 +101,50 @@ Everything below is one commit. No gameplay code moves.
    </Project>
    ```
 
-   Then delete the same settings from the csproj files; the shared file owns them now.
+   Then delete the same settings from the csproj files; the shared file owns them now. A repo
+   still paying down warnings sets `ModGatesWarningsAsErrors` to false in that root file.
 
-5. Load the gate functions at the top of `tools/pipeline.ps1` and keep the repo's own gates below:
+5. Load the gate functions at the top of `tools/pipeline.ps1`, keep the repo's own gates below,
+   and run them inside the gates' own temp folder:
 
    ```powershell
    . "$PSScriptRoot\..\gates\pipeline\gates.ps1"
    ```
 
+   ```powershell
+   $gateTemp = Enter-GateTemp
+   try {
+       Invoke-ManifestGate -FailVerb DEPLOY
+       Invoke-FormatGate -FailVerb DEPLOY
+       Invoke-UnitTestGate -FailVerb DEPLOY
+       Invoke-HealthGate -FailVerb DEPLOY
+       Invoke-TempLeftoverGate -FailVerb DEPLOY -GateTemp $gateTemp
+   }
+   finally { Exit-GateTemp -State $gateTemp }
+   ```
+
+   The CI workflow sets `GATES_BASE_SHA` to the commit a push started from, so the health
+   ratchet also judges against the memory on main, not only the last commit:
+
+   ```yaml
+   env:
+     GATES_BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+   ```
+
 6. Copy `gates/.editorconfig` to the repo root. The style contract checks the two match.
+
+7. Record today's numbers and commit them with the hookup: `python gates/tools/health.py floor --write`.
+   From then on a build with no committed floor is refused, not warned about.
 
 ## Taking a newer rulebook
 
 ```
-git subtree pull --prefix gates https://github.com/prawl/FFTModGates.git main --squash
+git subtree pull --prefix gates https://github.com/prawl/FFTModGates.git v0.2.0 --squash
 ```
 
-The commit is the moment the mod takes the new rules. `gates/VERSION` says which, and every build
-prints it. Nothing moves on its own.
+The commit is the moment the mod takes the new rules. `gates/VERSION` says which, every build
+prints it, and the manifest gate refuses a build when any file under `gates/` differs from the
+published list. A fix to the rules goes upstream here, never into a mod's copy.
 
 ## What stays in each mod
 
@@ -102,5 +153,6 @@ contracts, because each one checks that mod's own files.
 
 ## Working on this repo
 
-`.\Check.ps1` runs every gate here. The ledger is `docs/TODO.md` and `docs/CHANGELOG.md` with the
-MG id prefix.
+`.\Check.ps1` runs every gate here, under Windows PowerShell 5.1 and PowerShell 7 in CI. Run
+`python tools/manifest.py write` before committing; a stale list fails the check. The ledger is
+`docs/TODO.md` and `docs/CHANGELOG.md` with the MG id prefix.

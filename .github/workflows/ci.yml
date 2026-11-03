@@ -1,5 +1,5 @@
-# Runs the shared gates on this repo itself, on every push and pull request. Windows, because the
-# mods build only there and the gate script runs under PowerShell.
+# Runs the shared gates on this repo itself, on every push and pull request, under both the
+# PowerShell the mods build with locally (5.1) and the one CI ships (7).
 name: check
 
 on:
@@ -13,9 +13,8 @@ on:
 jobs:
   check:
     runs-on: windows-latest
-    defaults:
-      run:
-        shell: pwsh
+    env:
+      GATES_BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,4 +25,9 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0.x'
-      - run: ./Check.ps1
+      - name: Check under Windows PowerShell 5.1
+        shell: powershell
+        run: ./Check.ps1
+      - name: Check under PowerShell 7
+        shell: pwsh
+        run: ./Check.ps1

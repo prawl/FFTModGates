@@ -34,6 +34,28 @@ function Get-Rule {
 
 Write-Host "[gates] shared rules $GatesVersion, repo $GatesRepoRoot"
 
+function Invoke-ManifestGate {
+    # The copy of the rulebook must match what was published, file for file. Runs first.
+    param(
+        [Parameter(Mandatory = $true)][ValidateSet('DEPLOY', 'PACKAGE', 'CHECK')]
+        [string]$FailVerb
+    )
+
+    & python (Join-Path $GatesDir 'tools\manifest.py') verify --dir $GatesDir
+    if ($LASTEXITCODE -ne 0) {
+        throw "REFUSING TO ${FailVerb}: the rulebook copy under $GatesDir does not match its fingerprint list (see above)."
+    }
+}
+
+function Get-RatchetBase {
+    # The second ref the health ratchet judges against. CI passes the commit a push started
+    # from; a local run uses the main branch on the remote when it is known.
+    if ($env:GATES_BASE_SHA -and $env:GATES_BASE_SHA -notmatch '^0+$') { return $env:GATES_BASE_SHA }
+    & git -C $GatesRepoRoot rev-parse --verify --quiet origin/main 2>$null | Out-Null
+    if ($LASTEXITCODE -eq 0) { return 'origin/main' }
+    return $null
+}
+
 function Invoke-FormatGate {
     # Style gate. dotnet format in verify mode on every project, whitespace and the .editorconfig
     # rules only. It rewrites nothing; run "dotnet format" by hand to fix a red.
@@ -78,7 +100,10 @@ function Invoke-HealthGate {
     if ($LASTEXITCODE -ne 0) {
         throw "REFUSING TO ${FailVerb}: health.py --selftest failed (exit $LASTEXITCODE)."
     }
-    & python $health --repo $GatesRepoRoot ratchet
+    $ratchetArgs = @('--repo', $GatesRepoRoot, 'ratchet')
+    $base = Get-RatchetBase
+    if ($base) { $ratchetArgs += @('--base', $base) }
+    & python $health @ratchetArgs
     if ($LASTEXITCODE -ne 0) {
         throw "REFUSING TO ${FailVerb}: the code health ratchet found a measure worse than the best record (see above)."
     }
