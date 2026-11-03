@@ -8,6 +8,18 @@ with a date and no hash.
 
 ## 0.2 cycle
 
+- [MG-17] SHIPPED a1de979 2026-11-03: A mod written in Python can now be held to the same rules
+  as a C# mod. A repo lists the folders in rules.json and every .py under them, tools/lib
+  included, gets a row with the 200 line gate, the comment budget, the silent except and
+  long def counts and the duplication ratchet; the comment and style contracts read them
+  too. A repo that lists nothing sees no change, and one whose record holds no C# row is no
+  longer refused for that alone. Found hooking up Offensive Chemist, whose ten tools files
+  now measure from a scratch clone with gate.py as its one debt row. This repo opted in its
+  own tools folder and widened three totals under this card, since the day a folder is first
+  listed is its line in the sand. (Tech: rules.json pythonProd; health.py prod_root, row_name,
+  function_lengths, SILENT_EXCEPT and fresh_folders; FileRows carries a Python flag; the
+  docstring first sentence stands in for the summary; eleven selftest cases and three
+  theories.)
 - [MG-14] SHIPPED 625776e 2026-11-03: Nobody runs floor --write by hand any more. When a commit
   touches production code in a repo on the rulebook, the shared pre-commit writes the health
   file rows and stages them, so a shrink, a new file or a gone file never reaches the ratchet

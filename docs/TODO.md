@@ -10,19 +10,6 @@ gate lives in docs/RELEASE_SCOPE.md.
 
 ## Now (release: 0.2)
 
-- **[MG-17] Let a repo opt its Python into the health and comment rules** (opened 2026-11-03) [QUEUED]
-  - Done means: a mod written in Python can be held to the same rules as a C# mod, with the
-    200 line gate, the comment budget, the silent catch and long function counts and the
-    duplication ratchet reading its listed Python folders, tools/lib included. A repo that
-    lists none sees no change. A repo whose record holds zero rows is no longer refused for
-    that alone. The day a folder is first listed is its line in the sand, so a file already
-    over a line that day is debt, not a refusal. (Tech: rules.json pythonProd, a list of
-    folders; health.py and FileRows read .py under them, keyed by repo relative path; the
-    comment contract scans them recursively; this repo opts in its own tools folder.)
-  - Verify: this repo's rows gain its tools Python; a planted silent except in a listed folder
-    is refused by the ratchet; selftest cases cover a Python function over 60 code lines, a
-    silent except and the folder day one rule; Offensive Chemist's tree measured from here
-    reports rows for every file under its tools; Check.ps1 green.
 - **[MG-18] Let Now go empty** (opened 2026-11-03) [QUEUED]
   - Done means: shipping the last card in Now no longer fails the ledger test, so the owner is
     not made to invent a next card at every last exit. The owner ruled so on 2026-11-03 after
@@ -64,7 +51,8 @@ gate lives in docs/RELEASE_SCOPE.md.
 
 - Sections, in this order and no others: Now (with the release name in the header), Backlog,
   Walled, Format.
-- Now: at most 5 entries. Entry first line: `- **[MG-<n>] <title>** (opened YYYY-MM-DD) [STATUS]`
+- Now: at most 5 entries, and it may stand empty between cards. Entry first line:
+  `- **[MG-<n>] <title>** (opened YYYY-MM-DD) [STATUS]`
   where STATUS is QUEUED, BUILDING, AWAITING-LIVE, or BLOCKED(reason). Every entry carries a
   `- Done means:` and a `- Verify:` sub-bullet. Promote from Backlog by filling those in; if Now
   is at cap, demote something first.

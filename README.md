@@ -199,8 +199,9 @@ git subtree pull --prefix gates https://github.com/prawl/FFTModGates.git v0.2.0 
 ```
 
 The commit is the moment the mod takes the new rules. `gates/VERSION` says which, every build
-prints it, and the manifest gate refuses a build when any file under `gates/` differs from the
-published list. A fix to the rules goes upstream here, never into a mod's copy.
+prints it, `/gates` in a session shows it beside the session gates, and the manifest gate refuses
+a build when any file under `gates/` differs from the published list. A fix to the rules goes
+upstream here, never into a mod's copy.
 
 ## Who is on it
 
