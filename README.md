@@ -40,6 +40,7 @@ Everything below is one commit. No gameplay code moves.
    | --- | --- | --- |
    | `prod` | all three | The production code folder |
    | `tests` | health.py, tests | The test folder |
+   | `pythonProd` | all three | Optional. Folders whose Python counts as production code, `tools/lib` included; the day a folder is first listed is its line in the sand |
    | `ticketPrefix` | gate script, tests | The ledger id prefix |
    | `projects` | gate script | Every csproj `dotnet format` verifies |
    | `testProjects` | gate script | Every csproj `dotnet test` runs |
@@ -161,6 +162,13 @@ file to its row on every build.
   new file.
 - The parts of a `partial` type are summed under one row named `partial <Type>`, so splitting a
   file without a real seam changes nothing.
+- Python under a folder `rules.json` lists in `pythonProd` gets the same row, keyed by its repo
+  relative path, with a silent catch being an `except` whose body is only `pass` and a long
+  method a `def` over 60 code lines. The day a folder is first listed, every file under it is
+  debt rather than new, the line in the sand for that language. A repo that lists nothing sees
+  no change, and a repo whose record holds no C# row at all is no longer refused for that alone.
+  Listing a folder after the first floor moves the totals too, so that floor is the owner's,
+  written with `floor --write --allow-worse --card <id>` citing the card that opted the folder in.
 - When a file shrinks, or is new, or is gone, the row must follow before a build passes. The
   shared pre-commit writes it into the commit for you; by hand it is
   `python gates/tools/health.py floor --write`, committed with the change. The comment budget

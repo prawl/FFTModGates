@@ -20,7 +20,7 @@ import re
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from style_rules import WIDTH, FIRST, comment_refs, first_sentence, measure, overlong_prose, partial_type, python_layout  # noqa: E402
+from style_rules import WIDTH, FIRST, comment_refs, first_sentence, measure, overlong_prose, partial_type, python_layout
 
 NEW_RATIO, NEW_BLOCK = 1 / 3, 8
 PRUNED = {"bin", "obj", ".git", ".claude", "__pycache__", "gates", "TestResults"}
@@ -36,6 +36,7 @@ class Repo:
         with open(os.path.join(root, "rules.json"), encoding="utf-8-sig") as h:
             rules = json.load(h)
         self.prod, self.tests = rules["prod"].strip("/") + "/", rules["tests"].strip("/") + "/"
+        self.py_prod = [f.strip("/") + "/" for f in rules.get("pythonProd", [])]
         self.prefix, self.exempt = rules.get("ticketPrefix", "XX"), rules.get("noSummaryExempt", {})
         self.pruned = PRUNED | set(rules.get("prunedDirs", []))
         base = os.path.join(root, rules.get("baselines", "docs/health"))
@@ -70,7 +71,12 @@ class Repo:
         out = set(self.walk(self.prod, ".cs")) | set(self.walk(self.tests, ".cs")) | set(self.walk("tools", (".cs", ".py")))
         out |= set(self.walk("tools", ".ps1", deep=False)) | set(self.walk(".", ".ps1", deep=False))
         out |= set(self.walk("docs", ".md", deep=False)) | {"README.md"}
+        for folder in self.py_prod:
+            out |= set(self.walk(folder, ".py"))
         return sorted(r for r in out if os.path.isfile(os.path.join(self.root, r)))
+
+    def python_prod(self, rel):
+        return rel.endswith(".py") and any(rel.startswith(f) for f in self.py_prod)
 
     def row_key(self, rel):
         name = partial_type(self.text(rel))
@@ -82,13 +88,13 @@ class Repo:
         return dict(zip(self.rows["columns"], self.rows["files"][key]))
 
 
-def budget(repo, rel):
+def budget(repo, rel, python=False):
     """The frozen comment budget of the row rel belongs to, every part of a partial type summed."""
-    key = repo.row_key(rel)
+    key = rel if python else repo.row_key(rel)
     parts = [r for r in repo.walk(repo.prod, ".cs") if repo.row_key(r) == key] if key.startswith("partial ") else [rel]
     comment = code = block = 0
     for part in parts:
-        c, k, b, _ = measure(repo.text(part))
+        c, k, b, _ = measure(repo.text(part), python)
         comment, code, block = comment + c, code + k, max(block, b)
     row, name = repo.row(key), key if len(parts) == 1 else "%s (%s)" % (key, ", ".join(parts))
     if row is None:
@@ -106,26 +112,27 @@ def budget(repo, rel):
 def scan_file(repo, rel):
     text, name = repo.text(rel), os.path.basename(rel)
     lines = text.split("\n")
-    prod, tests = rel.startswith(repo.prod), rel.startswith(repo.tests)
+    prod, tests, py = rel.startswith(repo.prod), rel.startswith(repo.tests), repo.python_prod(rel)
     under_tools, top = rel.startswith("tools/"), "/" not in rel
-    if rel.endswith(".cs") and prod:
-        yield from measure(text)[3]
-        yield from budget(repo, rel)
-        first = first_sentence(text)
+    if (rel.endswith(".cs") and prod) or py:
+        yield from measure(text, py)[3]
+        yield from budget(repo, rel, py)
+        first = first_sentence(text, py)
         if first is None and name not in repo.exempt and name != "AssemblyInfo.cs":
-            yield 1, "no summary block; open the file with one short plain sentence"
+            yield 1, "no %s; open the file with one short plain sentence" % ("module docstring" if py else "summary block")
         elif first is not None and (len(first) > FIRST or not first.endswith(".")):
-            yield 1, "first summary sentence is %d characters, the rule is %d ending in a period" % (len(first), FIRST)
+            yield 1, "first sentence is %d characters, the rule is %d ending in a period" % (len(first), FIRST)
+    if rel.endswith(".cs") and prod:
         over = [n for n, l in enumerate(lines, 1) if l.lstrip().startswith("//") and len(l) > WIDTH]
         frozen = repo.style.get("comments", {}).get(name, 0)
         if len(over) > frozen:
             yield from ((n, "comment line over %d characters, %d of them against %d frozen; %s" % (WIDTH, len(over), frozen, STYLE_HINT)) for n in over)
     if rel.endswith(".cs") and (prod or tests or under_tools):
         yield from ((n + 1, "two blank lines in a row") for n in range(1, len(lines) - 1) if not lines[n].strip() and not lines[n - 1].strip())
-    if (rel.endswith(".cs") and (prod or tests)) or (rel.endswith((".py", ".ps1")) and (top or (rel.count("/") == 1 and under_tools))):
+    if (rel.endswith(".cs") and (prod or tests)) or py or (rel.endswith((".py", ".ps1")) and (top or (rel.count("/") == 1 and under_tools))):
         if name != "CommentContractTests.cs":
             yield from comment_refs(rel, lines)
-    if rel.endswith(".py") and under_tools:
+    if rel.endswith(".py") and (under_tools or py):
         yield from python_layout(lines)
     if rel.endswith(".md") and (rel == "README.md" or (rel.startswith("docs/") and rel.count("/") == 1 and name != "HEALTH.md")):
         over, frozen = overlong_prose(lines, repo.ledger_head), repo.style.get("docs", {}).get(rel, 0)

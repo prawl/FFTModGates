@@ -1,6 +1,7 @@
 {
   "prod": "Logging/",
   "tests": "Tests/",
+  "pythonProd": ["tools/"],
   "ticketPrefix": "MG",
   "projects": ["Selftest/Mod/Mod.csproj", "Selftest/Tests/Tests.csproj"],
   "testProjects": ["Selftest/Tests/Tests.csproj"],

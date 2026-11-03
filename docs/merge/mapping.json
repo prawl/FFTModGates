@@ -47,7 +47,9 @@
     "note": "The frozen baseline moves out of the test into the per-file rows health.py writes to docs/health/files.json, with no growth allowance.",
     "renamed": {
       "+A_partial_type_is_keyed_by_its_name": "the parts of a partial type share one row, so the key they share is pinned",
-      "+Every_frozen_count_refusal_names_its_baseline_file_and_what_moves_it": "every refusal from a frozen count names its baseline file and the command that moves it, pinned through the message builders"
+      "+Every_frozen_count_refusal_names_its_baseline_file_and_what_moves_it": "every refusal from a frozen count names its baseline file and the command that moves it, pinned through the message builders",
+      "+Measure_reads_a_python_file_by_its_own_comment_marker": "a repo may opt its Python folders into the comment budget, so the measure is pinned for the hash marker too",
+      "+First_docstring_sentence_opens_a_python_file": "a Python production file opens with a short docstring sentence the way a C# file opens with a summary"
     },
     "local": {},
     "wontfix": {}
@@ -61,7 +63,9 @@
   "SilentCatchContractTests": {
     "shared": "Tests/SilentCatchContractTests.cs",
     "note": "The empty catch count a file still carries on day one is the catches column of its row in docs/health/files.json, and the health ratchet makes it shrink.",
-    "renamed": {},
+    "renamed": {
+      "+A_silent_except_is_one_whose_body_is_only_pass": "a Python silent catch is an except whose body is only pass, the regex health.py counts with"
+    },
     "local": {},
     "wontfix": {}
   },

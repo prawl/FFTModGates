@@ -8,6 +8,15 @@ with a date and no hash.
 
 ## 0.2 cycle
 
+- [MG-14] SHIPPED 625776e 2026-11-03: Nobody runs floor --write by hand any more. When a commit
+  touches production code in a repo on the rulebook, the shared pre-commit writes the health
+  file rows and stages them, so a shrink, a new file or a gone file never reaches the ratchet
+  unrecorded. A floor that would be worse still refuses the commit with the row to paste. In
+  this repo the same hook rewrites the fingerprint list on every commit. (Tech: health_rows.py
+  behind health_rows.sh in the shared setup's git_hooks/pre-commit, after the cold read step;
+  rows that did not move are put back so no commit carries a floor whose only change is its
+  date; six tests through real commits and a stub health.py; the row shows on the /gates
+  screen.)
 - [MG-23] SHIPPED b6321a6 2026-11-03: When a test that freezes a count goes red, its message
   now says which file holds the number and what moves it, so the fix and the baseline land in
   one edit instead of three reruns. The README lists every frozen baseline in one table. From

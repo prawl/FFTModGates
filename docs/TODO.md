@@ -10,18 +10,6 @@ gate lives in docs/RELEASE_SCOPE.md.
 
 ## Now (release: 0.2)
 
-- **[MG-14] Let the pre-commit hook write the file rows, so nobody runs floor --write by hand** (opened 2026-11-02) [QUEUED]
-  - Done means: when a commit touches production code in a repo that has rules.json, the
-    shared pre-commit hook runs health.py floor --write and stages docs/health/files.json and
-    floor.json, so a shrink, a new file or a gone file never reaches the ratchet unrecorded. A
-    worse floor still refuses, with the confession row, since widening stays the owner's call.
-    (Tech: the pre-commit in the setup repo; floor --write exits 1 on a worse floor, which
-    refuses the commit; the two files are added to the index after a successful write. In the
-    rulebook repo itself the same hook rewrites MANIFEST.sha256 and stages it, since the rows
-    it just wrote would otherwise leave the fingerprint list stale on every such commit.)
-  - Verify: in a scratch repo on the rulebook, a commit that shrinks a file lands with the
-    updated rows staged and the ratchet green right after; a commit that widens a row is
-    refused with the row to paste; Check.ps1 green here.
 - **[MG-17] Let a repo opt its Python into the health and comment rules** (opened 2026-11-03) [QUEUED]
   - Done means: a mod written in Python can be held to the same rules as a C# mod, with the
     200 line gate, the comment budget, the silent catch and long function counts and the

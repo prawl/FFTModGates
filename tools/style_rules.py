@@ -73,11 +73,11 @@ def partial_type(text):
     return None
 
 
-def is_comment(s):
-    return s.startswith(("//", "/*", "*"))
+def is_comment(s, python=False):
+    return s.startswith("#" if python else ("//", "/*", "*"))
 
 
-def measure(text):
+def measure(text, python=False):
     """Comment lines, code lines, the longest comment block and the lines whose comment argues or carries a colon or dash."""
     comment = code = run = block = 0
     hits = []
@@ -85,29 +85,32 @@ def measure(text):
         s = raw.strip()
         if not s:
             continue
-        if is_comment(s):
+        if is_comment(s, python):
             comment, run, ctext = comment + 1, run + 1, s
             block = max(block, run)
         else:
-            code, run, k = code + 1, 0, raw.find(" //")
+            code, run, k = code + 1, 0, raw.find(" #" if python else " //")
             ctext = raw[k:] if k >= 0 else None
         if ctext is None:
             continue
         body = re.sub(r"<[^>]+>|\"[^\"]*\"|`[^`]*`", "#", ctext)
         body = re.sub(r"\b0x[0-9A-Fa-f]+\b|\b\d+:\d+\b|\b[\w.]+\.(cs|py|md|ps1):\d+", "#", body)
-        prose = re.sub(r"^(?:///|//|/\*|\*)\s*-\s", "", body)
+        prose = re.sub(r"^(?:///|//|/\*|\*|#)\s*-\s", "", body)
         what = ["a colon"] * len(re.findall(r"\w: ", body)) + ["a dash"] * len(re.findall(r"(?<=[A-Za-z0-9)]) - (?=[A-Za-z0-9(])|—| -- ", prose))
         hits += [(n, "%s inside a comment sentence (the owner writes neither)" % w) for w in what]
         hits += [(n, "the tell '%s' in a comment; a comment says what the code does or why, it never argues" % t) for t in TELL.findall(body)]
     return comment, code, block, hits
 
 
-def first_sentence(text):
-    m = re.search(r"///\s*<summary>(.*?)</summary>", text, re.S)
-    if not m:
-        return None
-    flat = re.sub(r"\s+", " ", re.sub(r"\s*///\s*", " ", m.group(1))).strip()
-    return re.split(r"(?<=[.!?])\s", flat)[0]
+def first_sentence(text, python=False):
+    """The first sentence of the first summary block, or of a Python module's docstring; None without one."""
+    if python:
+        m = re.match(r"(?:#[^\n]*\n|\s*\n)*\s*[rRuUbB]{0,2}(\"\"\"|''')(.*?)\1", text, re.S)
+        flat = re.sub(r"\s+", " ", m.group(2)).strip() if m else ""
+    else:
+        m = re.search(r"///\s*<summary>(.*?)</summary>", text, re.S)
+        flat = re.sub(r"\s+", " ", re.sub(r"\s*///\s*", " ", m.group(1))).strip() if m else ""
+    return re.split(r"(?<=[.!?])\s", flat)[0] if flat else None
 
 
 def python_layout(lines):

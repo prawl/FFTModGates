@@ -135,7 +135,9 @@ public class StyleContractTests
     [Fact]
     public void Python_under_tools_keeps_two_blank_lines_above_each_top_level_definition_and_never_three()
     {
-        var offenders = Walk(Path.Combine(RepoRoot.Locate(), "tools"), "*.py").SelectMany(f => PythonLayout(Lines(f)).Select(p => $"{Rel(f)}:{p}")).ToList();
+        var folders = new[] { "tools" }.Concat(Rules.Load().PythonProd.Select(f => f.TrimEnd('/'))).Distinct(StringComparer.OrdinalIgnoreCase);
+        var offenders = folders.SelectMany(d => Walk(Path.Combine(RepoRoot.Locate(), d), "*.py")).Distinct(StringComparer.OrdinalIgnoreCase)
+            .SelectMany(f => PythonLayout(Lines(f)).Select(p => $"{Rel(f)}:{p}")).ToList();
         Assert.True(offenders.Count == 0, string.Join("; ", offenders));
     }
 
