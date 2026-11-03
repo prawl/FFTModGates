@@ -1,0 +1,19 @@
+<Project>
+
+  <!-- The build settings every mod on the shared gates compiles under. A mod imports this file from
+       its own root Directory.Build.targets, so the settings reach every project under it and win
+       over the csproj. It is a targets file, not props, because IsTestProject is only known after
+       the csproj is read. A repo that must stay warm on warnings for now sets
+       ModGatesWarningsAsErrors to false in its own root file and ratchets its warning count down. -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);MSB3277</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(IsTestProject)' != 'true' and '$(ModGatesWarningsAsErrors)' != 'false'">
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,10 @@
+{
+  "prod": "Logging/",
+  "tests": "Tests/",
+  "ticketPrefix": "MG",
+  "projects": ["Selftest/Selftest.csproj"],
+  "testProjects": ["Selftest/Selftest.csproj"],
+  "modConfig": "VERSION",
+  "tempPrefixes": ["modgates_"],
+  "tempKeep": []
+}
