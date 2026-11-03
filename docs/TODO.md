@@ -10,14 +10,7 @@ gate lives in docs/RELEASE_SCOPE.md.
 
 ## Now (release: 0.1)
 
-- **[MG-1] One rulebook every mod can take, seeded from the best copy of each rule** (opened 2026-11-02) [BUILDING]
-  - Done means: this repo holds the shared logger, health.py, the gate functions, the build
-    settings and the style file, with no mod's name inside any of them, and its own check runs
-    green on itself. (Tech: Logging/ with the fault note and error flush hooks, tools/health.py
-    reading rules.json, pipeline/gates.ps1, Directory.Build.targets, .editorconfig, Selftest/.)
-  - Verify: `.\Check.ps1` is green; `python tools/health.py --repo <the newest mod> floor`
-    prints the same numbers as the newest mod's own copy.
-- **[MG-2] Merge the five copies of each contract test into one, losing no rule and no example** (opened 2026-11-02) [QUEUED]
+- **[MG-2] Merge the five copies of each contract test into one, losing no rule and no example** (opened 2026-11-02) [BUILDING]
   - Done means: Tests/ holds one copy of the ledger, log, image literal, comment budget, comment,
     silent catch, style and health wiring contract tests, reading rules.json for what differs per
     repo, and a check in this repo proves every fact name and every example case from the five
