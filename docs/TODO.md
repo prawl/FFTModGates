@@ -19,6 +19,22 @@ gate lives in docs/RELEASE_SCOPE.md.
   inside its Invoke-SharedGates; Write-HealthReport in Publish.ps1 or publishScript emptied;
   CommentBudget, SilentCatch and FileRows linked into its test project; the first floor comes
   from the pre-commit on that commit.)
+- [MG-27] 2026-11-03: The session status line says the C# language server is on whenever its
+  plugin loaded, even when the server never started or is still loading its solution, so a
+  session trusts a tool that is not there yet; the owner called that misleading on 2026-11-03.
+  Make the entry follow the live server, loading, on or off, and gone when it dies. (Tech:
+  mods/csharp-lsp-proxy/hooks/register.ts writes the status on session.start with no check;
+  the proxy knows the server's pid and sees its progress notifications, so it can write a
+  state file the hooks module reads; the first symbol call in a session comes back empty
+  while the server is still loading, which reads like a failure, so the proxy could also hold
+  that first request until the load ends.)
+- [MG-28] 2026-11-03: A session can hand off without leaving its feedback entry, since nothing
+  in the chain asks for one, so the scheduled review of the feedback file reads gaps; one of
+  the first four real handoffs left none. Have the handoff skill say to write the entry and
+  the clear script refuse a handoff whose session has no entry at the bottom of the file.
+  (Tech: skills/handoff/SKILL.md step 2; handoff_self.sh already refuses a stale, oversized or
+  pointerless note, so the entry check sits beside those; match on the session id in the entry
+  header, never on the time, since sessions type the time by guess.)
 
 ## Walled (blocked by engine / external)
 
