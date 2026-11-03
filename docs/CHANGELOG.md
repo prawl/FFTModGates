@@ -8,6 +8,17 @@ with a date and no hash.
 
 ## 0.2 cycle
 
+- [MG-5] SHIPPED 5a6096f 2026-11-03: A repo can now say where its em dash ban applies, so the
+  ban reaches its code and docs without reaching data files whose design notes are not game
+  text. A repo that lists nothing is not scanned, by the owner's ruling of 2026-11-03; this
+  repo lists its docs, code, tools, pipeline, selftest, README and check script. (Tech:
+  rules.json emDashScope, folders or files; a style contract test walks them, skips binaries
+  and names each line; the scanner applies the same rule; the README key table gains the row.)
+- [MG-25] SHIPPED 5a6096f 2026-11-03: A total or a row the owner widened under a card now stays
+  widened after that card ships, instead of the ratchet going red on the next build against
+  the main branch. Found the moment MG-17 shipped, when the base ref's old floor came back for
+  three totals and the check went red. (Tech: valid_allowances in health.py reads the card
+  from TODO.md and CHANGELOG.md at the ref; a selftest case pins that a SHIPPED row is a card.)
 - [MG-18] SHIPPED ef3027b 2026-11-03: Shipping the last card in Now no longer fails the ledger
   test, so nobody has to invent a next card at every last exit. The owner ruled so on
   2026-11-03, once the reason behind the refusal turned out to be written nowhere. The cap of
