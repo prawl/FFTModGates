@@ -8,6 +8,30 @@ with a date and no hash.
 
 ## 0.3 cycle
 
+- [MG-39] SHIPPED efa3498 2026-11-13: Every battle input on the simulator's list of what the
+  game's AI reads now has a row saying where it lives in memory, all still uncertain. Elements
+  and immunities come straight from the job table the game keeps in its exe, and timed status
+  counts, MP, reactions, charging and the mount bytes sit where the rows say across 133
+  recordings. MP, level and experience, and a ride ending, wait on Patrick's sign-off with video
+  frames. Five inputs need acting in the game (MG-40) and two clashes need his call (MG-42).
+  Worked from recordings, plus read only reads of three tables in the running game, with
+  nothing written to it. (Tech: new [job-table-row-layout] at 0x140785E30,
+  [unit-immune-statuses-from-job], [charged-move-mp-paid-on-landing],
+  [timed-status-count-bytes] +0x66 to +0x75, [mount-pair-bytes-clear-together],
+  [mount-roles-reversed-in-start-pair], [unit-record-ai-setting-bytes] +0x195 to +0x19A and
+  [auto-battle-ai-throws-items]; evidence added to [unit-element-bytes-0x76], [unit-mp-words],
+  [unit-record-level-byte], [unit-record-stat-bytes], [unit-reaction-bits-0x94],
+  [poison-bit-and-timer], [status-three-layer-bitfields], [unit-record-charge-fields],
+  [unit-mount-byte-0x1b4] and [ability-ai-target-flags]; +0x1EF is the lasting inflicted
+  layer, not this turn's; the death counter at +0x07 was already proven.)
+
+- [MG-38] SHIPPED cd14a3a 2026-11-13: A fact is now proven only after Patrick signs off on two
+  kinds of evidence set out raw for him: a memory read naming the address, the value and what
+  in the game changed it, and something seen in the game. Until then the row says awaiting
+  sign-off, and the keeper can no longer flip a row alone. (Tech: GAME_FACTS.md rule 6, rule 4
+  and the PROVEN mark; no row had used "keeper verified", and the contract test still accepts
+  it, MG-41.)
+
 - [MG-37] SHIPPED 5513178 2026-11-12: The row on how a unit's turn opens now says what the
   recordings show: the request slot is reused, and at a turn's open it mostly holds that unit's
   own last request, with one tile number wiped. It is uncertain, resting on memory reads only,

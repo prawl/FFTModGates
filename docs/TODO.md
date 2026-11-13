@@ -10,20 +10,6 @@ gate lives in docs/RELEASE_SCOPE.md.
 
 ## Now (release: 0.3)
 
-- **[MG-38] Write down Patrick's sign-off rule for proving a fact** (opened 2026-11-13) [BUILDING]
-  - Done means: the fact list's own rules say a fact needs two kinds of evidence, a memory read
-    and something seen in the game, set out raw for Patrick, and that it is proven only once he
-    signs off, with the keeper's old solo flip gone. (Tech: GAME_FACTS.md rule 6, rule 4 and the
-    PROVEN mark; no row used "keeper verified".)
-  - Verify: read rule 6 against Patrick's message of 2026-11-13, and .\Check.ps1 is green.
-- **[MG-39] Check where each battle input the game's AI reads lives in memory** (opened 2026-11-13) [BUILDING]
-  - Done means: every field on the simulator's AI input list has a fact row saying where it
-    lives in this build's memory and how sure we are, facts with a memory read and a video
-    frame say awaiting sign-off, and what needs acting in the game waits in MG-40. (Tech: BB
-    sim branch docs/research/ai_inputs_list_2026-11-13.txt at 2370a35; offline over 133 probe
-    session files, plus read only live reads of the job, action and AI flag tables.)
-  - Verify: the rows the changelog entry names read as it says, and .\Check.ps1 is green.
-
 ## Backlog
 
 - [MG-26] 2026-11-03: Opt Offensive Chemist's tools Python into the health gate, since its
