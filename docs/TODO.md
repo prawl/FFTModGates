@@ -10,6 +10,13 @@ gate lives in docs/RELEASE_SCOPE.md.
 
 ## Now (release: 0.3)
 
+- **[MG-38] Write down Patrick's sign-off rule for proving a fact** (opened 2026-11-13) [BUILDING]
+  - Done means: the fact list's own rules say a fact needs two kinds of evidence, a memory read
+    and something seen in the game, set out raw for Patrick, and that it is proven only once he
+    signs off, with the keeper's old solo flip gone. (Tech: GAME_FACTS.md rule 6, rule 4 and the
+    PROVEN mark; no row used "keeper verified".)
+  - Verify: read rule 6 against Patrick's message of 2026-11-13, and .\Check.ps1 is green.
+
 ## Backlog
 
 - [MG-26] 2026-11-03: Opt Offensive Chemist's tools Python into the health gate, since its

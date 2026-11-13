@@ -29,10 +29,10 @@ A cell never holds a pipe character, and a source never holds a semicolon of its
 
 ## The five marks
 
-- PROVEN: a session saw it hold in the running game, and Patrick agreed or the keeper checked it
-  under rule 6 below. The evidence carries a live source and one of "Patrick agreed YYYY-MM-DD",
-  "keeper verified YYYY-MM-DD" or, for a mark brought in from a repo whose proven mark was already
-  his call, "proven in BB YYYY-MM-DD" or "proven in LW YYYY-MM-DD".
+- PROVEN: a session saw it hold in the running game, and Patrick signed off on the two kinds of
+  evidence rule 6 below asks for. The evidence carries a live source and one of "Patrick agreed
+  YYYY-MM-DD" or, for a mark brought in from a repo whose proven mark was already his call,
+  "proven in BB YYYY-MM-DD" or "proven in LW YYYY-MM-DD".
 - UNCERTAIN: read off a tape, a table, the code or someone else's work, or seen live without
   Patrick's agreement yet. Fine to build on with care, but not settled.
 - CONTRADICTED: the claim as written does not hold on this build, or the evidence points both
@@ -71,19 +71,21 @@ a row names, since every RVA Living Weapons pinned there carried over unchanged
 2. The same fact from two places is one row carrying both sources.
 3. A later look that overturns a row marks it CONTRADICTED and says what overturned it. The row
    stays, and its id is never reused.
-4. The keeper flips a row to PROVEN once a session saw it hold live and Patrick agreed, and writes
-   the day he agreed. Nobody hands the flip back to him.
+4. The keeper flips a row to PROVEN once a session saw it hold live and Patrick signed off under
+   rule 6, and writes the day he agreed. Nobody hands the flip back to him.
 5. A mark brought in from a repo keeps its word only when it meets this list's rules. A layout
    fact proven only on an older build comes in UNCERTAIN with its old proof named. A script's
    SELF PROVEN comes in UNCERTAIN, cited as a harness run.
-6. The keeper may flip a row to PROVEN without Patrick on two pieces of proof of different kinds:
-   a frame of our recorded video showing it, and a memory read or write count that agrees. Two
-   frames, or two reads, are one kind and do not count. Each must rule out that the game would
-   have done the same anyway, and both must sit in a file or commit the row cites, so anyone can
-   check them again. The row then ends "keeper verified YYYY-MM-DD". A fact that cannot be seen on
-   screen, an internal byte say, cannot be flipped this way and waits for Patrick, whose own eyes
-   on the live game still count alone. The warning case is [endturn-facing-write-sets-facing]:
-   two early tries looked like proof and lost to 105.
+6. A flip to PROVEN needs two pieces of evidence of different kinds, set out raw in front of
+   Patrick before anyone calls the row verified: a memory read, giving the address, the value read
+   and what in the game changed it (HP dropped by 47 when hit, say), and something seen in the
+   game, a frame of our recorded video or Patrick's own eyes. Two frames, or two reads, are one
+   kind and do not count. Each must rule out that the game would have done the same anyway, and
+   both must sit in a file or commit the row cites, so anyone can check them again. Until he signs
+   off, the row keeps its mark and its evidence says "awaiting sign-off"; once he does, it ends
+   "Patrick agreed YYYY-MM-DD". Acting in the game to get a piece needs a plan and his yes first.
+   The warning case is [endturn-facing-write-sets-facing]: two early tries looked like proof and
+   lost to 105.
 
 ## Repos
 
