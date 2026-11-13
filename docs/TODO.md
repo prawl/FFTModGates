@@ -40,15 +40,6 @@ gate lives in docs/RELEASE_SCOPE.md.
   the game fact list once that checklist is written, so each factor the game has gets a row and
   the ones the simulator skips read NOT MODELED. (Tech: the third source Patrick named on
   2026-11-12; it waits on that checklist.)
-- [MG-32] 2026-11-12: Ten facts in the shared list read proven though nobody has seen them
-  on today's game build, only on an older one, while the list's own rule says such facts come in
-  uncertain; Patrick decides whether they drop to uncertain or stand. (Tech: PROVEN rows whose
-  every live source says "on a build before 1.5.2", against docs/GAME_FACTS.md merge rule 5:
-  hiding-all-enemies-wins-battle, resurrect-despawned-unit, spawn-ai-unit-donor-duplication,
-  unit-on-unpathable-tile-stranded, render-z-cosmetic-and-hit-restamp,
-  world-z-downward-floor-clamped, zero-value-command-ai-silent,
-  attack-row-catalog-offset-redirect, float-hover-is-world-z and anim-request-register.
-  hide-reveal-ghost-statue was the eleventh, dropped to UNCERTAIN on Patrick's word.)
 - [MG-33] 2026-11-12: Battle Brain's own notes carry mistakes the shared fact list has fixed,
   and Battle Brain's session must fix them in its own files, since the keeper never edits
   another repo; Patrick passes the list on. Owed so far: the journal names the chocobo and its

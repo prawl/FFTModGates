@@ -8,6 +8,16 @@ with a date and no hash.
 
 ## 0.3 cycle
 
+- [MG-32] SHIPPED 9b51615 2026-11-12: Ten facts that read proven though they were only ever
+  seen on an older game build are settled on Patrick's word. Five stay proven, each noting it was
+  seen only before 1.5.2, and five drop to uncertain, since he no longer recalls how they came
+  out. (Tech: kept PROVEN with "Patrick agreed 2026-11-12": resurrect-despawned-unit,
+  unit-on-unpathable-tile-stranded, render-z-cosmetic-and-hit-restamp,
+  world-z-downward-floor-clamped, float-hover-is-world-z. Dropped to UNCERTAIN, the old yes
+  named in the evidence: hiding-all-enemies-wins-battle, spawn-ai-unit-donor-duplication,
+  zero-value-command-ai-silent, attack-row-catalog-offset-redirect, anim-request-register. The
+  co-tiled lock he raised already had its row, co-tiled-units-soft-lock, UNCERTAIN.)
+
 - [MG-31] SHIPPED bf22877 2026-11-12: The fact keeper may now mark a fact proven without Patrick
   when one frame of our recorded video shows it and a memory read agrees, never two of one kind,
   each ruling out that the game would have done it anyway and both kept where anyone can check
