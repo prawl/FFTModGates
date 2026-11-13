@@ -10,17 +10,6 @@ gate lives in docs/RELEASE_SCOPE.md.
 
 ## Now (release: 0.3)
 
-- **[MG-43] Settle the poison count clash on Patrick's call** (opened 2026-11-13) [BUILDING]
-  - Done means: a new row says the poison count goes to 0 when poison ends, naming the 2 odd
-    endings, and the old pre 1.5 row stays, marked superseded. (Tech: [poison-bit-and-count]
-    new, [poison-bit-and-timer] CONTRADICTED.)
-  - Verify: both rows read so, and .\Check.ps1 is green.
-- **[MG-44] Answer whether the game's AI reads a target's reactions** (opened 2026-11-13) [BUILDING]
-  - Done means: the fact list says, with code addresses, where the AI's code meets the reaction
-    bytes and that no AI routine tests them itself. (Tech: [ai-trial-runs-blade-grasp-check]
-    and [effect-code-picks-hit-reactions], from a disassembly of the 1.5.2 no-DRM exe.)
-  - Verify: the rows' call path reads the same in a disassembler, and .\Check.ps1 is green.
-
 ## Backlog
 
 - [MG-26] 2026-11-03: Opt Offensive Chemist's tools Python into the health gate, since its

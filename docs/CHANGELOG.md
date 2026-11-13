@@ -8,6 +8,23 @@ with a date and no hash.
 
 ## 0.3 cycle
 
+- [MG-44] SHIPPED 3b68458 2026-11-13: The game's AI never tests a target's reactions itself.
+  It meets them only in its trial run of each candidate act, which goes through the same hit
+  code a real act does: Blade Grasp and Arrow Guard cut the hit chance to 100 less Brave and
+  roll Brave for a miss, so at 100 Brave the trial always misses, as the old write ups say.
+  The same code picks which reaction a hit would raise, Counter among them, and what the AI
+  scores from that is not read yet. Read from the exe on disk, nothing written to the game.
+  (Tech: [ai-trial-runs-blade-grasp-check] and [effect-code-picks-hit-reactions]; FUN_14038ABA4
+  to 0x140281ce8, 0x1403099b0 and 0x14030afec; 0x14030a488 from 0x14038a665 and 0x14038ace0;
+  the roll 0x140278e68; mode global 0x14186AF80, set to 2 only by the hit preview 0x140283c00.)
+
+- [MG-43] SHIPPED 3b68458 2026-11-13: On Patrick's call the poison count goes to 0 when poison
+  ends, as 118 of 120 recorded endings show. The other 2 were a poison bit written in from
+  outside during a test, which the game cleared after one tick while the count stayed at 36.
+  The old Living Weapons row from before 1.5 stays, marked superseded. (Tech: new
+  [poison-bit-and-count]; [poison-bit-and-timer] CONTRADICTED; the odd two at
+  probe_20261106_024920.jsonl#152 and #154.)
+
 - [MG-39] SHIPPED efa3498 2026-11-13: Every battle input on the simulator's list of what the
   game's AI reads now has a row saying where it lives in memory, all still uncertain. Elements
   and immunities come straight from the job table the game keeps in its exe, and timed status
