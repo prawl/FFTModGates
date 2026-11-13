@@ -49,6 +49,18 @@ gate lives in docs/RELEASE_SCOPE.md.
   world-z-downward-floor-clamped, zero-value-command-ai-silent,
   attack-row-catalog-offset-redirect, float-hover-is-world-z and anim-request-register.
   hide-reveal-ghost-statue was the eleventh, dropped to UNCERTAIN on Patrick's word.)
+- [MG-33] 2026-11-12: Battle Brain's own notes carry mistakes the shared fact list has fixed,
+  and Battle Brain's session must fix them in its own files, since the keeper never edits
+  another repo; Patrick passes the list on. Owed so far: the journal names the chocobo and its
+  rider the wrong way round, and its byte table says an end of turn request is wiped clean when
+  the game keeps the move's numbers in it. (Tech: FFTBattleBrain docs/SPIKE_FACTS.md lines 1561
+  to 1567, rider 0x80 and mount 0x40 per [unit-mount-byte-0x1b4]; line 296, the EndTurn column
+  of the byte correlation table, per [endturn-carried-move-bytes].)
+- [MG-34] 2026-11-12: Check whether a unit's turn really opens on a wiped request, since eight
+  recorded turn openings arrived still holding numbers from before. Parked by Patrick until
+  the seven clashes of 2026-11-12 are done. (Tech: [request-buffer-reused-across-turns] says
+  only the coordinates are zeroed; 8 first calls of a turn on BB's tapes arrived as type 2
+  with nonzero bytes at +4, e.g. exam_two_battle_one_unwatched_auto_battle#104.)
 
 ## Walled (blocked by engine / external)
 
