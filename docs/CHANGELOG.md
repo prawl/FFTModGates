@@ -12,7 +12,8 @@ with a date and no hash.
   request mostly holds that unit's own last Act, its facing and its last target, with only one
   tile number wiped, so the old proven row that says otherwise goes to Patrick as MG-37. Worked
   offline from recordings only, nothing read from or written to the game. (Tech:
-  [turn-open-request-holds-own-last-act], UNCERTAIN; 569 first calls of a turn on Battle
+  [turn-open-request-holds-own-last-act], UNCERTAIN, since merged into
+  [request-buffer-reused-across-turns] by MG-37; 569 first calls of a turn on Battle
   Brain's 22 tapes: +4 to +7 its own last Act 244 of 246, +0x10 and +0x14 its own last request
   403 of 456, +C its own facing 98 of 109, +8 zeroed whenever it changed, 113 all zero.)
 
