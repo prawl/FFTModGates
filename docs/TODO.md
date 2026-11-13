@@ -22,6 +22,15 @@ gate lives in docs/RELEASE_SCOPE.md.
   - Verify: Check.ps1 is green, a reviewer checking 40 random rows against their sources finds
     at most one wrong in ten, and the left out lists account for all 441 marked Battle Brain
     claims and all 178 ledger entries.
+  State 2026-11-12 20:30: 249 rows merged (pilots, BB lines 590 to 1138, Patrick's ten live
+  facts). Readers have finished BB lines 1139 to 2906 and LW 2336 to the end, and their rows
+  wait unmerged as out_*.md in a session scratchpad, beside the merge, cite and readers
+  scripts; .claude/handoff.md names the folder. LW 1315 to 2335 was still reading. Several updates
+  hit the same row (turn-moved-acted-flags, unit-record-psx-block-shifted-eight,
+  battle-lost-when-ramza-is-out, unit-record-index-byte) and need merging by hand, and two
+  readers used one id for different claims (human-bit-cleared-at-open-menu). Spend so far in
+  tokens: pilots 274k and 426k, readers 238k, 256k, 249k, 262k and 302k, file writes about 60k,
+  against an estimate of about 1.6M for all nine.
 
 ## Backlog
 
