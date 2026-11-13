@@ -8,6 +8,13 @@ with a date and no hash.
 
 ## 0.3 cycle
 
+- [MG-37] SHIPPED 5513178 2026-11-12: The row on how a unit's turn opens now says what the
+  recordings show: the request slot is reused, and at a turn's open it mostly holds that unit's
+  own last request, with one tile number wiped. It is uncertain, resting on memory reads only,
+  and the turn opening row merged into it so the list holds one fact. (Tech:
+  [request-buffer-reused-across-turns] narrowed on Patrick's call, PROVEN in BB 2026-10-26 noted
+  as for the old wording; [turn-open-request-holds-own-last-act] retired into it.)
+
 - [MG-34] SHIPPED 8afcc17 2026-11-12: A unit's turn does not open on a wiped request. The
   request mostly holds that unit's own last Act, its facing and its last target, with only one
   tile number wiped, so the old proven row that says otherwise goes to Patrick as MG-37. Worked

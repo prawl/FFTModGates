@@ -67,11 +67,6 @@ gate lives in docs/RELEASE_SCOPE.md.
   invisible-status-steers-ai-targeting, 2026-07-22; table-xml-whole-row-writeback,
   2026-07-14, the modloader's own behaviour. ct-scheduler-adopts-band-slot, flipped
   2026-11-12 though both its sightings are from 2026-06-16, went back to UNCERTAIN.)
-- [MG-37] 2026-11-12: A proven row says a unit's turn opens on the last unit's request with
-  only the tile numbers wiped, but 569 recorded turn openings show the unit's own earlier
-  request there instead; Patrick decides whether the proven row is split or narrowed. (Tech:
-  [request-buffer-reused-across-turns], PROVEN in BB 2026-10-26, against
-  [turn-open-request-holds-own-last-act].)
 
 ## Walled (blocked by engine / external)
 
