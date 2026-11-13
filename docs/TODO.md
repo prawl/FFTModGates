@@ -10,14 +10,6 @@ gate lives in docs/RELEASE_SCOPE.md.
 
 ## Now (release: 0.3)
 
-- **[MG-47] Answer the simulator's 21 unknown numbers from the game itself** (opened 2026-11-13) [BUILDING]
-  - Done means: each of G1 to G21 has a verdict and a source, read only, the answers in fact rows
-    and the live checks in the map 116 list for Main Brain, the unread ones carried to a card.
-    (Tech: 17 new rows from [ai-trial-plays-only-reflect] to [doom-counts-holder-turns], with
-    [timed-status-count-bytes] and [statuses-that-block-reactions] widened; checks I to O.)
-  - Verify: each row's addresses match a capstone read of the exe, each table read live equals
-    the exe's bytes, and .\Check.ps1 is green.
-
 ## Backlog
 
 - [MG-26] 2026-11-03: Opt Offensive Chemist's tools Python into the health gate, since its

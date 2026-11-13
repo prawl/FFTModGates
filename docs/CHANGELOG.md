@@ -8,6 +8,22 @@ with a date and no hash.
 
 ## 0.3 cycle
 
+- [MG-47] SHIPPED 9a38211 2026-11-13: Seventeen of the simulator's 24 questions now have
+  answers from the game's own code and tables, read only. Manafont gives back a tenth of max MP,
+  rounded up, after a move. Counter Tackle only rushes a striker inside Rush's reach. Parry lets a
+  held weapon dodge like a shield. A rider's mount and a unit in deep water cannot react. Doom
+  counts its holder's turns, not the clock. An enemy's Auto-Potion is always a free Potion.
+  Counter rolls Brave once. The AI's trial plays only Reflect, so MG-46's "counts as firing" means
+  queued, not played. Seven questions stay open as MG-48, and checks I to O join the map 116 list.
+  (Tech: rows [ai-trial-plays-only-reflect], [counter-tackle-reach-is-rush],
+  [parry-adds-weapon-evade], [natures-wrath-plays-tile-geomancy], [counter-rolls-brave-once],
+  [counter-chain-needs-act-flag], [critical-set-before-last-chain],
+  [reactions-blocked-by-deep-water-and-rider], [auto-potion-enemy-drinks-potion],
+  [auto-potion-rolls-before-stock], [manafont-mp-after-move], [mp-cost-halve-mp-bit],
+  [mime-pays-no-mp], [mp-charged-by-skillset-kind], [status-table-start-counts],
+  [status-sets-built-from-table] and [doom-counts-holder-turns]; [timed-status-count-bytes] gains
+  Doom's exception and [statuses-that-block-reactions] this build's set 4.)
+
 - [MG-46] SHIPPED efe7fc3 2026-11-13: The game's AI thinks in a dry run where nothing rolls,
   so when its trial meets Blade Grasp or Arrow Guard it takes the cut hit chance of 100 less
   Brave as it stands, and every reaction a trial hit raises counts as firing. This corrects
