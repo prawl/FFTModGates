@@ -29,9 +29,10 @@ A cell never holds a pipe character, and a source never holds a semicolon of its
 
 ## The five marks
 
-- PROVEN: a session saw it hold in the running game, and Patrick agreed. The evidence carries a
-  live source and either "Patrick agreed YYYY-MM-DD" or, for a mark brought in from a repo whose
-  proven mark was already his call, "proven in BB YYYY-MM-DD" or "proven in LW YYYY-MM-DD".
+- PROVEN: a session saw it hold in the running game, and Patrick agreed or the keeper checked it
+  under rule 6 below. The evidence carries a live source and one of "Patrick agreed YYYY-MM-DD",
+  "keeper verified YYYY-MM-DD" or, for a mark brought in from a repo whose proven mark was already
+  his call, "proven in BB YYYY-MM-DD" or "proven in LW YYYY-MM-DD".
 - UNCERTAIN: read off a tape, a table, the code or someone else's work, or seen live without
   Patrick's agreement yet. Fine to build on with care, but not settled.
 - CONTRADICTED: the claim as written does not hold on this build, or the evidence points both
@@ -75,6 +76,14 @@ a row names, since every RVA Living Weapons pinned there carried over unchanged
 5. A mark brought in from a repo keeps its word only when it meets this list's rules. A layout
    fact proven only on an older build comes in UNCERTAIN with its old proof named. A script's
    SELF PROVEN comes in UNCERTAIN, cited as a harness run.
+6. The keeper may flip a row to PROVEN without Patrick on two pieces of proof of different kinds:
+   a frame of our recorded video showing it, and a memory read or write count that agrees. Two
+   frames, or two reads, are one kind and do not count. Each must rule out that the game would
+   have done the same anyway, and both must sit in a file or commit the row cites, so anyone can
+   check them again. The row then ends "keeper verified YYYY-MM-DD". A fact that cannot be seen on
+   screen, an internal byte say, cannot be flipped this way and waits for Patrick, whose own eyes
+   on the live game still count alone. The warning case is [endturn-facing-write-sets-facing]:
+   two early tries looked like proof and lost to 105.
 
 ## Repos
 
@@ -145,7 +154,8 @@ a row names, since every RVA Living Weapons pinned there carried over unchanged
 | Id | Fact | Mark | Evidence | Leaned on by |
 |---|---|---|---|---|
 | [action-request-move-destination] | A Move request (byte +0 is 0) carries the destination tile's X at +4 and Y at +8, each a u16. | PROVEN | live watch: three walks ended on the requested tile by the unit's grid bytes +0x4F and +0x50, slot 0 (8,17) to (8,15) on X 8 Y 0x0F, slot 3 (9,5) to (9,8) on X 9 Y 8 and slot 4 (5,7) to (5,10) on X 5 Y 0x0A, with +6 at 0 throughout on a flat map, probe_20261026_212759.jsonl (BB, 2026-10-26); live watch: no log, a stock Move read by eye on fftivc.together's panel, type 0, +4 0x0006, +6 0, +8 0x0011, +C 0x03 and every other byte 0 (BB, 2026-10-26); live watch: no log, step 0, Y edited to 0x0E walked to the edited tile (BB, 2026-10-26); live watch: a written move to (6,7) walked there, brain/probe_20261026_230258.jsonl, a log lost on 2026-10-27 (BB, 2026-10-26); proven in BB 2026-10-26 | BB, sim |
-| [action-request-facing-byte] | Byte +C of a Move request holds the unit's facing, 0 to 3, and the same value rides into the EndTurn request of a turn that moved first, where writing it sets the facing the unit ends its turn with. | PROVEN | live watch: the step 0 edit of +C from 03 to 01 on an EndTurn request and the seq 29 overwrite to 1, and 0, 2 and 3 seen on Move requests, probe_20261026_212759.jsonl (BB, 2026-10-26); proven in BB 2026-10-26 | BB, sim |
+| [action-request-facing-byte] | Byte +C of a Move request holds the unit's facing, 0 to 3, and the same value rides into the EndTurn request of a turn that moved first. Whether writing it there sets the facing the unit ends with is [endturn-facing-write-sets-facing]. | PROVEN | live watch: 0, 2 and 3 seen on Move requests and the same value riding into the EndTurn request, probe_20261026_212759.jsonl (BB, 2026-10-26); proven in BB 2026-10-26 | BB, sim |
+| [endturn-facing-write-sets-facing] | Writing a facing into byte +C of the EndTurn request of a turn that moved first sets the facing the unit ends its turn with. Two writes on 2026-10-26 seemed to take, with no check of where the game would have turned the unit anyway, and of 105 later writes off the game's nearest foe rule one held ([endturn-facing-write-rarely-holds]). | CONTRADICTED | live watch: the step 0 edit of +C from 03 to 01 on an EndTurn request and the seq 29 overwrite to 1, probe_20261026_212759.jsonl (BB, 2026-10-26); live tape: the 27 session files of sim_cast_2026-11-08, 105 changed writes off the nearest foe rule and one ending the written way, docs/research/sim_playout_2026-11-09.txt (BB, 2026-11-09); Patrick agreed 2026-11-12 | BB, sim |
 | [action-request-type-byte] | The action request is 24 bytes, and byte +0 names what it asks for: 0 Move, 1 Act, 2 EndTurn. | PROVEN | live watch: every request in probe_20261026_212759.jsonl (BB, 2026-10-26); source read: dicene/fftivc.together ActionRequest.cs for the 24 byte layout (BB, 2026-10-26); proven in BB 2026-10-26 | BB, sim |
 | [act-request-target-tile] | An Act request carries its target tile's X at +0x10 and Y at +0x14, each a u16. Bytes +0x08 to +0x0B read 0 on an Act, so together's Field_8 label for the target does not hold. | PROVEN | live watch: four Acts checked against the victims' grid bytes, slot 0 at (8,11) hitting (8,10), slot 3 at (9,10) hitting (8,10), slot 4 at (7,9) hitting (8,9) and player slot 17 at (5,8) hitting (7,9) where slot 4 stood, probe_20261026_212759.jsonl (BB, 2026-10-26); live watch: no log, human enemies' Acts in the second battle of 2026-10-26 evening (BB, 2026-10-26); proven in BB 2026-10-26 | BB, sim |
 | [act-request-skillset-and-ability] | An Act request names its skillset in byte +0x05 and its ability in the u16 at +0x06. A basic Attack is skillset 0x01 ability 0. A Knight's Arts of War showed skillset 0x07 with abilities 0x8A, 0x8B and 0x91, another Knight skillset 0x02 with ability 0x18E, and monsters' attacks skillsets 0xB7 and 0xD2 with abilities 320, 275 and 225. | PROVEN | live watch: probe_20261026_212759.jsonl (BB, 2026-10-26); live watch: no log, the second battle of 2026-10-26 evening (BB, 2026-10-26); proven in BB 2026-10-26 | BB, sim |

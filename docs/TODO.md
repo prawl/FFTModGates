@@ -10,6 +10,15 @@ gate lives in docs/RELEASE_SCOPE.md.
 
 ## Now (release: 0.3)
 
+- **[MG-31] Let the fact keeper prove a fact on a video frame and a memory read** (opened 2026-11-12) [BUILDING]
+  Patrick's rule: the keeper may mark a fact proven without him when one frame of our recorded
+  video shows it and a memory read agrees, both kept where anyone can check them again.
+  - Done means: the fact list's rules say so, and its test takes the keeper's sign off only beside
+    a video frame and a separate memory read. (Tech: docs/GAME_FACTS.md rule 6 and the PROVEN mark;
+    Tests/GameFactsContractTests.cs, "keeper verified YYYY-MM-DD".)
+  - Verify: Check.ps1 is green, with test rows showing two reads refused, a frame beside a no log
+    read refused, and a frame beside a tape read taken.
+
 ## Backlog
 
 - [MG-26] 2026-11-03: Opt Offensive Chemist's tools Python into the health gate, since its

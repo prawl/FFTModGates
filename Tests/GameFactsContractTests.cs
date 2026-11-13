@@ -10,7 +10,8 @@ namespace ModGates.Tests;
 /// <summary>
 /// The shared game fact list, docs/GAME_FACTS.md here and gates/docs/GAME_FACTS.md in a mod. Every
 /// fact row has five cells, an id used once, one of the five marks, sources of a kind the list names
-/// and readers from its repo table. A PROVEN row carries a live source and Patrick's word.
+/// and readers from its repo table. A PROVEN row carries a live source and Patrick's word, or the
+/// keeper's video frame beside a memory read.
 /// </summary>
 public class GameFactsContractTests
 {
@@ -24,6 +25,9 @@ public class GameFactsContractTests
     [InlineData("| [a-fact] | Seen. | PROVEN | live watch: no log (BB, 2026-10-26); Patrick agreed 2026-10-27 | BB, LW |", "")]
     [InlineData("| [a-fact] | Seen. | PROVEN | live tape: t.jsonl.gz#4 (LW, 2026-10-17); proven in LW 2026-10-17 | LW |", "")]
     [InlineData("| [a-fact] | Gap. | NOT MODELED | source read: tools/sim/clock.py (BB, 2026-11-12) | BB |", "")]
+    [InlineData("| [a-fact] | Seen. | PROVEN | live watch: video clip.mp4 at 01:20:14 (BB, 2026-11-12); live tape: t.jsonl.gz#4 (BB, 2026-11-12); keeper verified 2026-11-12 | BB |", "")]
+    [InlineData("| [a-fact] | Seen. | PROVEN | live tape: a.jsonl.gz#4 (BB, 2026-11-12); live tape: b.jsonl.gz#9 (BB, 2026-11-12); keeper verified 2026-11-12 | BB |", "video frame")]
+    [InlineData("| [a-fact] | Seen. | PROVEN | live watch: video clip.mp4 at 01:20:14 (BB, 2026-11-12); live watch: no log, reads at turn 4 (BB, 2026-11-12); keeper verified 2026-11-12 | BB |", "memory read")]
     [InlineData("| [A_Fact] | The game does a thing. | UNCERTAIN | exe scan: x (BB, 2026-10-26) | BB |", "id")]
     [InlineData("| [a-fact] |  | UNCERTAIN | exe scan: x (BB, 2026-10-26) | BB |", "fact")]
     [InlineData("| [a-fact] | Thing. | LIKELY | exe scan: x (BB, 2026-10-26) | BB |", "mark")]
@@ -97,7 +101,9 @@ internal static class FactList
     private static readonly HashSet<string> Marks = new() { "PROVEN", "UNCERTAIN", "CONTRADICTED", "WALLED", "NOT MODELED" };
     private static readonly HashSet<string> LiveKinds = new() { "live tape", "live watch" };
     private static readonly Regex Id = new(@"^\[[a-z0-9]+(-[a-z0-9]+)*\]$");
-    private static readonly Regex Agreed = new(@"^(Patrick agreed|proven in [A-Z]+) \d{4}-\d{2}-\d{2}$");
+    private static readonly Regex Agreed = new(@"^(Patrick agreed|keeper verified|proven in [A-Z]+) \d{4}-\d{2}-\d{2}$");
+    private static readonly Regex Frame = new(@"\.mp4|\.mkv|\bvideo\b|\bframe\b", RegexOptions.IgnoreCase);
+    private static readonly Regex MemoryRead = new(@"\.jsonl|\.json\b|\.log\b|\.txt\b|#\d", RegexOptions.IgnoreCase);
     private static readonly Regex Source = new(@"^([A-Za-z ]+): .+ \(([A-Za-z]+), \d{4}-\d{2}-\d{2}\)$");
 
     public static string[]? Load()
@@ -155,6 +161,14 @@ internal static class FactList
         if (sources.Count == 0) faults.Add("evidence names no source");
         if (cells[2] == "PROVEN" && !parts.Any(p => Agreed.IsMatch(p))) faults.Add("PROVEN without 'Patrick agreed' or 'proven in' and a day");
         if (cells[2] == "PROVEN" && !sources.Any(p => LiveKinds.Contains(Source.Match(p).Groups[1].Value))) faults.Add("PROVEN without a live source");
+        if (parts.Any(p => p.StartsWith("keeper verified")))
+        {
+            // Two of one kind can share one blind spot, so the keeper's flip wants one of each.
+            var kept = sources.Where(p => !p.Contains("no log")).ToList();
+            var frames = kept.Where(p => Frame.IsMatch(p)).ToList();
+            if (frames.Count == 0) faults.Add("keeper verified without a video frame source");
+            else if (!kept.Any(p => !frames.Contains(p) && MemoryRead.IsMatch(p))) faults.Add("keeper verified without a memory read source beside the frame");
+        }
         var readers = cells[4].Split(',').Select(r => r.Trim()).ToList();
         if (readers.Any(r => !repos.Contains(r))) faults.Add($"reader list '{cells[4]}' names a repo missing from the repo table");
         return faults;
