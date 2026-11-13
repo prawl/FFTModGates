@@ -89,6 +89,19 @@ gate lives in docs/RELEASE_SCOPE.md.
   is in doubt. Patrick left both rows as they are until a clean ride on a normal setup in the
   map 116 plan settles it; the poison half of this card is settled as MG-43. (Tech:
   [mount-roles-reversed-in-start-pair] against [unit-mount-byte-0x1b4].)
+- [MG-46] 2026-11-13: Two rows say the AI's trial run rolls Brave for Blade Grasp and for
+  queued reactions, but the game marks the AI's whole think as a dry run, where neither rolls:
+  the trial just takes the cut hit chance and lets every reaction fire. Fix both rows and the
+  brief to Main Brain. (Tech: BattleRoutine FUN_14031F130 sets 0x14186AF80 to 1 at 0x14031F23C
+  and restores it at 0x14031F2FF; [ai-trial-runs-blade-grasp-check] and
+  [effect-code-picks-hit-reactions]; the MG-44 entry's "roll Brave for a miss" is the
+  mechanism that is wrong, its outcome holds.)
+- [MG-47] 2026-11-13: The simulator listed 21 game numbers its copy of the AI lacks; find each
+  in the exe or the recordings, read only, with a verdict and a source, nearest to use first:
+  Manafont's MP refund, Counter Tackle, Parry, and the deep water and rider blocks on
+  reactions, which the code already settles. (Tech: G1 to G21 in FFTBattleBrain sim worktree
+  docs/research/sim_mechanics_unknowns_2026-11-13.txt at dd80021; G17 is FUN_14030DD1C; the
+  sim's status table at 0x140788FE0 and its Doom at the turn start still to check.)
 
 ## Walled (blocked by engine / external)
 
