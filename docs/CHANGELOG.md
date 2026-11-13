@@ -8,6 +8,14 @@ with a date and no hash.
 
 ## 0.3 cycle
 
+- [MG-34] SHIPPED 8afcc17 2026-11-12: A unit's turn does not open on a wiped request. The
+  request mostly holds that unit's own last Act, its facing and its last target, with only one
+  tile number wiped, so the old proven row that says otherwise goes to Patrick as MG-37. Worked
+  offline from recordings only, nothing read from or written to the game. (Tech:
+  [turn-open-request-holds-own-last-act], UNCERTAIN; 569 first calls of a turn on Battle
+  Brain's 22 tapes: +4 to +7 its own last Act 244 of 246, +0x10 and +0x14 its own last request
+  403 of 456, +C its own facing 98 of 109, +8 zeroed whenever it changed, 113 all zero.)
+
 - [MG-32] SHIPPED 9b51615 2026-11-12: Ten facts that read proven though they were only ever
   seen on an older game build are settled on Patrick's word. Two stay proven, noting they were
   seen only before 1.5.2, and eight drop to uncertain: four he no longer recalls, and four he

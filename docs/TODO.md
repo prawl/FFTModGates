@@ -72,11 +72,6 @@ gate lives in docs/RELEASE_SCOPE.md.
   request there instead; Patrick decides whether the proven row is split or narrowed. (Tech:
   [request-buffer-reused-across-turns], PROVEN in BB 2026-10-26, against
   [turn-open-request-holds-own-last-act].)
-- [MG-34] 2026-11-12: Check whether a unit's turn really opens on a wiped request, since eight
-  recorded turn openings arrived still holding numbers from before. Parked by Patrick until
-  the seven clashes of 2026-11-12 are done. (Tech: [request-buffer-reused-across-turns] says
-  only the coordinates are zeroed; 8 first calls of a turn on BB's tapes arrived as type 2
-  with nonzero bytes at +4, e.g. exam_two_battle_one_unwatched_auto_battle#104.)
 
 ## Walled (blocked by engine / external)
 
