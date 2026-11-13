@@ -87,7 +87,8 @@ gate lives in docs/RELEASE_SCOPE.md.
 - [MG-42] 2026-11-13: Two rows clash with what the recordings show, and Patrick decides each. A
   chocobo and Ramza paired at a battle's start carried the rider and mount bits the other way
   round while the screen drew Ramza riding, and a poison count read 0 after 118 of 120 endings
-  where an older row says it stays standing. (Tech: [mount-roles-reversed-in-start-pair]
+  where an older row says it stays standing. Patrick wants a clean ride on a normal setup in
+  the map 116 plan before he rules on the first. (Tech: [mount-roles-reversed-in-start-pair]
   against [unit-mount-byte-0x1b4]; [poison-bit-and-timer], "leaves standing after the poison
   ends", from Living Weapons on a build before 1.5.)
 
