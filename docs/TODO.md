@@ -10,6 +10,14 @@ gate lives in docs/RELEASE_SCOPE.md.
 
 ## Now (release: 0.3)
 
+- **[MG-47] Answer the simulator's 21 unknown numbers from the game itself** (opened 2026-11-13) [BUILDING]
+  - Done means: each of G1 to G21 has a verdict and a source, read only, the answers in fact rows
+    and the live checks in the map 116 list for Main Brain, the unread ones carried to a card.
+    (Tech: 17 new rows from [ai-trial-plays-only-reflect] to [doom-counts-holder-turns], with
+    [timed-status-count-bytes] and [statuses-that-block-reactions] widened; checks I to O.)
+  - Verify: each row's addresses match a capstone read of the exe, each table read live equals
+    the exe's bytes, and .\Check.ps1 is green.
+
 ## Backlog
 
 - [MG-26] 2026-11-03: Opt Offensive Chemist's tools Python into the health gate, since its
@@ -89,12 +97,12 @@ gate lives in docs/RELEASE_SCOPE.md.
   is in doubt. Patrick left both rows as they are until a clean ride on a normal setup in the
   map 116 plan settles it; the poison half of this card is settled as MG-43. (Tech:
   [mount-roles-reversed-in-start-pair] against [unit-mount-byte-0x1b4].)
-- [MG-47] 2026-11-13: The simulator listed 21 game numbers its copy of the AI lacks; find each
-  in the exe or the recordings, read only, with a verdict and a source, nearest to use first:
-  Manafont's MP refund, Counter Tackle, Parry, and the deep water and rider blocks on
-  reactions, which the code already settles. (Tech: G1 to G21 in FFTBattleBrain sim worktree
-  docs/research/sim_mechanics_unknowns_2026-11-13.txt at dd80021; G17 is FUN_14030DD1C; the
-  sim's status table at 0x140788FE0 and its Doom at the turn start still to check.)
+- [MG-48] 2026-11-13: Seven of the simulator's unknowns are still unread in the exe: how a
+  charged cast lands and breaks, the turn after an act refused for MP, MP an act gives or takes,
+  the AI's half MP rule for MP restores, what each status does while it lasts, what most
+  reactions do, and a unit's own act on itself against Blade Grasp. Read them the same way, read
+  only. (Tech: G4, G5, G7, G8, G13, G14's unread reactions and G17a's third point in FFTBattleBrain
+  sim worktree docs/research/sim_mechanics_unknowns_2026-11-13.txt at dd80021.)
 
 ## Walled (blocked by engine / external)
 
