@@ -8,7 +8,20 @@ being worked for the current release (hard cap 5, each entry carries Done means 
 through docs/CHANGELOG.md, moved there in the commit that ships or kills them. The release ship
 gate lives in docs/RELEASE_SCOPE.md.
 
-## Now (release: 0.2)
+## Now (release: 0.3)
+
+- **[MG-29] One list of game facts for every mod** (opened 2026-11-12) [BUILDING]
+  Every mod keeps its own notes on how the game works, so the same fact gets found twice and a
+  fact one mod overturned can still mislead another. This builds one shared list here, written
+  by one keeper session that merges what the others send.
+  - Done means: every game fact in Battle Brain's research journal and in Living Weapons' live
+    ledger and self test plan is one row with its mark, evidence and readers, every claim left
+    out is named with why, and the shape test is green. (Tech: docs/GAME_FACTS.md, held by
+    Tests/GameFactsContractTests.cs; sources FFTBattleBrain docs/SPIKE_FACTS.md and
+    FFTLivingWeapons docs/LIVE_LEDGER.md and docs/research/SELF_TEST_PLAN.md.)
+  - Verify: Check.ps1 is green, a reviewer checking 40 random rows against their sources finds
+    at most one wrong in ten, and the left out lists account for all 441 marked Battle Brain
+    claims and all 178 ledger entries.
 
 ## Backlog
 
@@ -35,6 +48,11 @@ gate lives in docs/RELEASE_SCOPE.md.
   (Tech: skills/handoff/SKILL.md step 2; handoff_self.sh already refuses a stale, oversized or
   pointerless note, so the entry check sits beside those; match on the session id in the entry
   header, never on the time, since sessions type the time by guess.)
+
+- [MG-30] 2026-11-12: Add the Battle Brain simulator's checklist of every factor it models to
+  the game fact list once that checklist is written, so each factor the game has gets a row and
+  the ones the simulator skips read NOT MODELED. (Tech: the third source Patrick named on
+  2026-11-12; it waits on that checklist.)
 
 ## Walled (blocked by engine / external)
 
