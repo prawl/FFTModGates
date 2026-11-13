@@ -58,6 +58,15 @@ gate lives in docs/RELEASE_SCOPE.md.
   [terrain-grid-record-base] has 0x140D8DCB0; [hide-reveal-ghost-statue] summary "sprite gone",
   per [gate-byte-hide-drops-sprite]; line 2494, composed "rebuilt every frame as inflicted OR
   innate", per [status-three-layer-bitfields].)
+- [MG-36] 2026-11-12: Four facts read proven though every sighting behind them is from an
+  older game build, before 1.5.2 or before its copy protected release; recheck each on today's
+  build and keep or drop its mark. (Tech: PROVEN rows whose live sources all name an older
+  build or are dated before 2026-07-27 with none named: resurrect-despawned-unit, kept on
+  Patrick's word, his certainty resting on Battle Brain's clone tests, which copy a living
+  unit and never revive a removed one; ct-scheduler-adopts-band-slot, flipped 2026-11-12 in a
+  batch listed as watched on this build though both sightings are from 2026-06-16;
+  invisible-status-steers-ai-targeting, 2026-07-22; table-xml-whole-row-writeback,
+  2026-07-14, the modloader's own behaviour.)
 - [MG-34] 2026-11-12: Check whether a unit's turn really opens on a wiped request, since eight
   recorded turn openings arrived still holding numbers from before. Parked by Patrick until
   the seven clashes of 2026-11-12 are done. (Tech: [request-buffer-reused-across-turns] says
