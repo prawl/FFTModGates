@@ -6,6 +6,62 @@ Where docs/TODO.md items land when they ship, die, or retract; newest first with
 Entry first line: `- [MG-<n>] SHIPPED <hash> YYYY-MM-DD: <summary>`, or WONTFIX / RETRACTED
 with a date and no hash.
 
+## 0.3 cycle
+
+- [MG-29] SHIPPED 92f6e40 2026-11-12: Every mod now has one shared list of how the game works, 665
+  facts, instead of each keeping its own notes. All of Battle Brain's research journal and Living
+  Weapons' live ledger and self test plan went in, each fact once, with how sure we are, what showed
+  it and which mods lean on it. A reviewer checked 40 random rows against their sources and found 1
+  wrong, since fixed. The two earliest chunks were then checked claim by claim, and the details
+  missing there were put back. What was left out, line by line, is below: claims about the mods
+  rather than the game, and details a row does not carry.
+  - Battle Brain journal lines 1 to 589: 62, 338, 360, 373, 379, 383, 385, 387, 410, 416, 421, 443,
+    465 and 523 are Battle Brain's own hook, driver, gate, recorder, handshake, hold budget and
+    timing; 393 is another mod's startup message; 586 names cases never reached; 448 is a driver's
+    plan arriving in time. Details no row carries: 174, which request facing value is which
+    direction; 237, a facing write holding on an idle turn; 348, the Move asked 6.2 s later, after
+    the animation; 400, the caller addresses holding still through a hold; 480, a tile thickness
+    field with no byte given; 558, the unit staying on (3,9).
+  - Journal lines 590 to 1138: 1069, a tool's file rename failing on Windows.
+  - Journal lines 1139 to 1669: 1237, 1279, 1311, 1326, 1597 and 1626 are Battle Brain's plans, gate
+    and log checks. Details no row carries: 1164 to 1166, tile byte 6 bit 0x04 is not a dip marker,
+    with dip never defined; 1592 to 1593, a written Poison read back; 1607, a stock Auto-Potion;
+    1322, 1509 to 1510 and 1524 to 1526, tool notes.
+  - Journal lines 1670 to 2271: 1803, 1870, 1920, 2035, 2077, 2113, 2116 and 2254 are Battle Brain's
+    tools and bookkeeping; 2229 is another mod's config. Details no row carries: line 2001's mode
+    word 0x140D408F4 and new game byte 0x1407829FA, no meaning given; 1937's tip about selling
+    potions; 1814's rule on outside scripts, only its race caveat kept.
+  - Journal lines 2272 to 2906: 2322, 2393, 2397, 2434, 2525, 2607, 2630, 2636, 2642 and 2667 are
+    the mod's fight file, driver and leave flags; 2617 has too few turns; 2639 is Windows, not the
+    game; 2893 is another mod's config; 2500 does not say which action table it means, a question
+    still open.
+  - Living Weapons ledger to line 1314: 333 [extended-inventory-boot-arm], a mod feature.
+  - Ledger lines 1315 to 2335: 1347 [renewal-regen-aura] and 1363 [kill-attribution-low-entropy] are
+    mod logic. Details no row carries: 1517 an action counter; 1579 the undead bit never exercised;
+    1595 a nameId kept across a job change; 1739 a charged Cure landing about 7 s on; 1771 a clone's
+    passive AI and its +0x1BC host slot; 1803 the acting node id dword 0x140CF873C and the hover
+    byte 0x140C6CFE0 + id x 9; 1821 a hidden unit displaced one tile; 1851 a +0x1EE ally bit read;
+    1867 key 221, the placeholder Toadja; 1967 the placeholder text on Evading, Performing and
+    Critical; 1997 the stale static copy 0x140893C00 and a facing rollback at teardown; 2045 the
+    slope and flag meanings; 2177 a mirror re-copy; 2187 the ten writers of 0x140D407A0; 2234 the
+    statics block flag at 0x1407B0760 + 0x1C; 2310 the picker table set 0x14067FA90.
+  - Ledger lines 2336 to 3467: 2470 and 2934 are Living Weapons' painter cache; 2678 and 3199
+    already have rows; 3063's retracted part, its standing claim being a row already; 3113 is the
+    mod's code disagreeing with itself; 3239 is a limit of a probing method; 3157
+    [crit-chance-settable] and 3171 [guest-traitor-flip] carry no date to cite.
+  - Self test plan lines 97 to 99, 128 to 130, 132 to 135, 291 to 292, 294 to 295 and 303 to 304:
+    tool claims, plans and predictions.
+  (Tech: docs/GAME_FACTS.md held by Tests/GameFactsContractTests.cs; 441 journal claims and 178
+  ledger entries read in seven chunks, the left out lists adding up per chunk. The two pilot chunks
+  kept no list, so every claim there was matched to rows again: 56 of 57 ledger entries by slug, 44
+  of 89 journal claims by address, the other 45 judged by hand. A spot check of 10 hand calls found
+  6 wrong, so all 45 were judged again under the rule that a dropped detail is fixed or listed: 2
+  rows fixed, 2 added, 7 details listed, one since carried. A second spot check of 20, 10 hand calls
+  and 10 address matches, found 11 wrong, 2 of the matches pointing at unrelated rows, all fixed.
+  The other 34 address matches were then judged by hand: 18 held, and 16 had dropped details, now
+  carried on 14 rows, 4 of those having pointed at the wrong row. All 89 journal claims are now
+  judged by hand.)
+
 ## 0.2 cycle
 
 - [MG-24] SHIPPED 733d72b 2026-11-03: The four mods now run rulebook v0.2.0 and the README table

@@ -10,26 +10,6 @@ gate lives in docs/RELEASE_SCOPE.md.
 
 ## Now (release: 0.3)
 
-- **[MG-29] One list of game facts for every mod** (opened 2026-11-12) [BUILDING]
-  Every mod keeps its own notes on how the game works, so the same fact gets found twice and a
-  fact one mod overturned can still mislead another. This builds one shared list here, written
-  by one keeper session that merges what the others send.
-  - Done means: every game fact in Battle Brain's research journal and in Living Weapons' live
-    ledger and self test plan is one row with its mark, evidence and readers, every claim left
-    out is named with why, and the shape test is green. (Tech: docs/GAME_FACTS.md, held by
-    Tests/GameFactsContractTests.cs; sources FFTBattleBrain docs/SPIKE_FACTS.md and
-    FFTLivingWeapons docs/LIVE_LEDGER.md and docs/research/SELF_TEST_PLAN.md.)
-  - Verify: Check.ps1 is green, a reviewer checking 40 random rows against their sources finds
-    at most one wrong in ten, and the left out lists account for all 441 marked Battle Brain
-    claims and all 178 ledger entries.
-  State 2026-11-12 late: every chunk is merged, 665 rows, pushed at ddf4240, and the main review
-  found 1 wrong in 40, since fixed. The two pilot chunks kept no left out list, so their claims
-  were matched to rows again: a spot check of 10 hand calls found 6 wrong, a second of 20 found 11
-  wrong, and all were fixed, the script's matching by address proving unreliable. Waits on
-  Patrick: check the other 34 script matches, or the whole list, for dropped details before
-  shipping. The left out record for the changelog entry is drafted in the session scratchpad.
-  Spend this session: reviewers 132k, 53k and 93k tokens; LW 1315 to 2335's reader 369k.
-
 ## Backlog
 
 - [MG-26] 2026-11-03: Opt Offensive Chemist's tools Python into the health gate, since its
