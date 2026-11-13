@@ -8,6 +8,13 @@ with a date and no hash.
 
 ## 0.3 cycle
 
+- [MG-31] SHIPPED bf22877 2026-11-12: The fact keeper may now mark a fact proven without Patrick
+  when one frame of our recorded video shows it and a memory read agrees, never two of one kind,
+  each ruling out that the game would have done it anyway and both kept where anyone can check
+  them. A fact that cannot be seen on screen still waits for Patrick. (Tech: docs/GAME_FACTS.md
+  rule 6 and the PROVEN mark; Tests/GameFactsContractTests.cs takes "keeper verified YYYY-MM-DD"
+  only beside a video frame source and a separate memory read source, with three new test rows.)
+
 - [MG-29] SHIPPED 92f6e40 2026-11-12: Every mod now has one shared list of how the game works, 665
   facts, instead of each keeping its own notes. All of Battle Brain's research journal and Living
   Weapons' live ledger and self test plan went in, each fact once, with how sure we are, what showed
