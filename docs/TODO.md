@@ -13,11 +13,12 @@ gate lives in docs/RELEASE_SCOPE.md.
 - **[MG-49] Find where the game keeps a battle's win condition** (opened 2026-11-13) [AWAITING-LIVE]
   - Done means: the fact list says where the live game holds what wins and loses a battle, what
     each value means, and whether the game's AI reads it, with two unlike proofs signed off by
-    Claude Duet. The code half is in; the proofs need one battle with a named unit, a story fight
-    or a single write on Patrick's yes. (Tech: [battle-outcome-essential-units],
-    [battle-loss-ramza-by-sprite-set], [battle-condition-script], [ai-think-skips-battle-outcome],
-    [ai-focus-target-from-unit-data], [unit-existence-byte-0x1b5]; [unit-record-ai-setting-bytes]
-    marked CONTRADICTED.)
+    Claude Duet. Three Orbonne story battles gave the proofs for Defeat X! and the objective mark,
+    awaiting sign-off; the per unit 0x03 rule still waits on a Save X! battle. (Tech:
+    [defeat-named-unit-ends-on-hp-zero], [objective-unit-mark-0x1f8],
+    [battle-outcome-essential-units], [battle-loss-ramza-by-sprite-set], [battle-condition-script],
+    [ai-think-skips-battle-outcome], [ai-focus-target-from-unit-data], [unit-existence-byte-0x1b5];
+    [unit-record-ai-setting-bytes] marked CONTRADICTED.)
   - Verify: each row's addresses match a capstone read of the exe, the proofs sit in a cited file,
     and .\Check.ps1 is green.
 
