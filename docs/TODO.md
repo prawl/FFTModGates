@@ -40,6 +40,15 @@ gate lives in docs/RELEASE_SCOPE.md.
   the game fact list once that checklist is written, so each factor the game has gets a row and
   the ones the simulator skips read NOT MODELED. (Tech: the third source Patrick named on
   2026-11-12; it waits on that checklist.)
+- [MG-32] 2026-11-12: Eleven facts in the shared list read proven though nobody has seen them
+  on today's game build, only on an older one, while the list's own rule says such facts come in
+  uncertain; Patrick decides whether they drop to uncertain or stand. (Tech: PROVEN rows whose
+  every live source says "on a build before 1.5.2", against docs/GAME_FACTS.md merge rule 5:
+  hiding-all-enemies-wins-battle, resurrect-despawned-unit, spawn-ai-unit-donor-duplication,
+  unit-on-unpathable-tile-stranded, render-z-cosmetic-and-hit-restamp,
+  world-z-downward-floor-clamped, zero-value-command-ai-silent,
+  attack-row-catalog-offset-redirect, float-hover-is-world-z, anim-request-register, and
+  hide-reveal-ghost-statue, which clash 4 of the 2026-11-12 batch settles on its own.)
 
 ## Walled (blocked by engine / external)
 
