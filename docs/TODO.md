@@ -56,6 +56,15 @@ gate lives in docs/RELEASE_SCOPE.md.
   the game keeps the move's numbers in it. (Tech: FFTBattleBrain docs/SPIKE_FACTS.md lines 1561
   to 1567, rider 0x80 and mount 0x40 per [unit-mount-byte-0x1b4]; line 296, the EndTurn column
   of the byte correlation table, per [endturn-carried-move-bytes].)
+- [MG-35] 2026-11-12: Living Weapons' own ledger carries mistakes the shared fact list has
+  fixed, and Living Weapons' session must fix them in its own files, since the keeper never
+  edits another repo; Patrick passes the list on. Owed so far: one paragraph still gives the old
+  terrain map address and blames the two tile shift on eyeballing, which a later paragraph of
+  the same entry takes back, and the hide toggle's summary says the unit's picture vanishes,
+  which does not hold on today's build. (Tech: FFTLivingWeapons docs/LIVE_LEDGER.md line 3097,
+  "TILE SYSTEM SOLVED 2026-07-28", base 0x140D8DCC0 where [terrain-grid-record-base] has
+  0x140D8DCB0; [hide-reveal-ghost-statue] summary "sprite gone", per
+  [gate-byte-hide-drops-sprite].)
 - [MG-34] 2026-11-12: Check whether a unit's turn really opens on a wiped request, since eight
   recorded turn openings arrived still holding numbers from before. Parked by Patrick until
   the seven clashes of 2026-11-12 are done. (Tech: [request-buffer-reused-across-turns] says
