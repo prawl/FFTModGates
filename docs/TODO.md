@@ -10,6 +10,15 @@ gate lives in docs/RELEASE_SCOPE.md.
 
 ## Now (release: 0.3)
 
+- **[MG-46] Correct the AI's trial run to a dry run with no rolls** (opened 2026-11-13) [BUILDING]
+  - Done means: the two reaction rows and the brief to Main Brain say the AI's trial takes
+    Blade Grasp's cut hit chance as it stands and lets every reaction a hit raises fire, with
+    no Brave roll, since the AI thinks with the dry run flag on. (Tech:
+    [ai-trial-runs-blade-grasp-check] and [effect-code-picks-hit-reactions]; 0x14186AF80 set to
+    1 at 0x14031F23C and back to 0 at 0x14031F2FF; queue helpers 0x14030bdc0, 0x14030be18,
+    0x14030be68 and 0x14030beb4.)
+  - Verify: each claim matches a capstone read of the exe, and .\Check.ps1 is green.
+
 ## Backlog
 
 - [MG-26] 2026-11-03: Opt Offensive Chemist's tools Python into the health gate, since its
@@ -89,13 +98,6 @@ gate lives in docs/RELEASE_SCOPE.md.
   is in doubt. Patrick left both rows as they are until a clean ride on a normal setup in the
   map 116 plan settles it; the poison half of this card is settled as MG-43. (Tech:
   [mount-roles-reversed-in-start-pair] against [unit-mount-byte-0x1b4].)
-- [MG-46] 2026-11-13: Two rows say the AI's trial run rolls Brave for Blade Grasp and for
-  queued reactions, but the game marks the AI's whole think as a dry run, where neither rolls:
-  the trial just takes the cut hit chance and lets every reaction fire. Fix both rows and the
-  brief to Main Brain. (Tech: BattleRoutine FUN_14031F130 sets 0x14186AF80 to 1 at 0x14031F23C
-  and restores it at 0x14031F2FF; [ai-trial-runs-blade-grasp-check] and
-  [effect-code-picks-hit-reactions]; the MG-44 entry's "roll Brave for a miss" is the
-  mechanism that is wrong, its outcome holds.)
 - [MG-47] 2026-11-13: The simulator listed 21 game numbers its copy of the AI lacks; find each
   in the exe or the recordings, read only, with a verdict and a source, nearest to use first:
   Manafont's MP refund, Counter Tackle, Parry, and the deep water and rider blocks on
