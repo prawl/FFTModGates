@@ -8,6 +8,17 @@ with a date and no hash.
 
 ## 0.3 cycle
 
+- [MG-46] SHIPPED efe7fc3 2026-11-13: The game's AI thinks in a dry run where nothing rolls,
+  so when its trial meets Blade Grasp or Arrow Guard it takes the cut hit chance of 100 less
+  Brave as it stands, and every reaction a trial hit raises counts as firing. This corrects
+  MG-44's "roll Brave for a miss": the outcome there holds, a Brave 100 grasper reads 0 percent,
+  but no roll happens. The mode global is also set by more than the hit preview. Read from the
+  exe on disk, nothing written to the game. (Tech: [ai-trial-runs-blade-grasp-check] and
+  [effect-code-picks-hit-reactions]; BattleRoutine 0x14031F130 sets 0x14186AF80 to 1 at
+  0x14031F23C and back to 0 at 0x14031F2FF around 0x14031f534 and 0x140320920, which reach the
+  trial; the queue helpers 0x14030bdc0, 0x14030be18, 0x14030be68 and 0x14030beb4 skip the roll
+  while it is not 0; other writers 0x14030d1cc, 0x14030f030 and 0x14030fe60.)
+
 - [MG-45] SHIPPED ca29df5 2026-11-13: Every flag in the game's AI table now has a name, so the
   model and the simulator can say what kind of move each one is to the AI: whom it aims at,
   whether it can be reflected, whether it checks the target's turn timing, and the rest. Each
