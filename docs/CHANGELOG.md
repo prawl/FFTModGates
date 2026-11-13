@@ -8,6 +8,13 @@ with a date and no hash.
 
 ## 0.3 cycle
 
+- [MG-45] SHIPPED ca29df5 2026-11-13: Every flag in the game's AI table now has a name, so the
+  model and the simulator can say what kind of move each one is to the AI: whom it aims at,
+  whether it can be reflected, whether it checks the target's turn timing, and the rest. Each
+  of the 27 names the mod loader knows matched one bit on all 512 abilities. (Tech:
+  [ability-ai-flag-names]; the simulator's four unported flag kinds are TargetMap, Reflectable,
+  CheckCT_Target and most likely RandomHits.)
+
 - [MG-44] SHIPPED 3b68458 2026-11-13: The game's AI never tests a target's reactions itself.
   It meets them only in its trial run of each candidate act, which goes through the same hit
   code a real act does: Blade Grasp and Arrow Guard cut the hit chance to 100 less Brave and

@@ -10,12 +10,6 @@ gate lives in docs/RELEASE_SCOPE.md.
 
 ## Now (release: 0.3)
 
-- **[MG-45] Name every bit of the game's AI flag table** (opened 2026-11-13) [BUILDING]
-  - Done means: the fact list says which bit of the AI table each of the mod loader's 27 AI flag
-    names is, so the model and the simulator can give each flag a word. (Tech:
-    [ability-ai-flag-names], AbilityData.xml AIBehaviorFlags against the table at 0x140787F80.)
-  - Verify: the row's map agrees with the table on all 512 rows, and .\Check.ps1 is green.
-
 ## Backlog
 
 - [MG-26] 2026-11-03: Opt Offensive Chemist's tools Python into the health gate, since its
