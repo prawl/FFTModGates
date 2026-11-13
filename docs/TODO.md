@@ -60,11 +60,13 @@ gate lives in docs/RELEASE_SCOPE.md.
   fixed, and Living Weapons' session must fix them in its own files, since the keeper never
   edits another repo; Patrick passes the list on. Owed so far: one paragraph still gives the old
   terrain map address and blames the two tile shift on eyeballing, which a later paragraph of
-  the same entry takes back, and the hide toggle's summary says the unit's picture vanishes,
-  which does not hold on today's build. (Tech: FFTLivingWeapons docs/LIVE_LEDGER.md line 3097,
-  "TILE SYSTEM SOLVED 2026-07-28", base 0x140D8DCC0 where [terrain-grid-record-base] has
-  0x140D8DCB0; [hide-reveal-ghost-statue] summary "sprite gone", per
-  [gate-byte-hide-drops-sprite].)
+  the same entry takes back; the hide toggle's summary says the unit's picture vanishes, which
+  does not hold on today's build; and the status layers entry says the on screen statuses are
+  rebuilt every frame, which two of its own live tests overturn. (Tech: FFTLivingWeapons
+  docs/LIVE_LEDGER.md line 3097, "TILE SYSTEM SOLVED 2026-07-28", base 0x140D8DCC0 where
+  [terrain-grid-record-base] has 0x140D8DCB0; [hide-reveal-ghost-statue] summary "sprite gone",
+  per [gate-byte-hide-drops-sprite]; line 2494, composed "rebuilt every frame as inflicted OR
+  innate", per [status-three-layer-bitfields].)
 - [MG-34] 2026-11-12: Check whether a unit's turn really opens on a wiped request, since eight
   recorded turn openings arrived still holding numbers from before. Parked by Patrick until
   the seven clashes of 2026-11-12 are done. (Tech: [request-buffer-reused-across-turns] says
