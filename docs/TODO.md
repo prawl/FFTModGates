@@ -16,6 +16,13 @@ gate lives in docs/RELEASE_SCOPE.md.
     signs off, with the keeper's old solo flip gone. (Tech: GAME_FACTS.md rule 6, rule 4 and the
     PROVEN mark; no row used "keeper verified".)
   - Verify: read rule 6 against Patrick's message of 2026-11-13, and .\Check.ps1 is green.
+- **[MG-39] Check where each battle input the game's AI reads lives in memory** (opened 2026-11-13) [BUILDING]
+  - Done means: every field on the simulator's AI input list has a fact row saying where it
+    lives in this build's memory and how sure we are, facts with a memory read and a video
+    frame say awaiting sign-off, and what needs acting in the game waits in MG-40. (Tech: BB
+    sim branch docs/research/ai_inputs_list_2026-11-13.txt at 2370a35; offline over 133 probe
+    session files, plus read only live reads of the job, action and AI flag tables.)
+  - Verify: the rows the changelog entry names read as it says, and .\Check.ps1 is green.
 
 ## Backlog
 
@@ -51,9 +58,14 @@ gate lives in docs/RELEASE_SCOPE.md.
   and Battle Brain's session must fix them in its own files, since the keeper never edits
   another repo; Patrick passes the list on. Owed so far: the journal names the chocobo and its
   rider the wrong way round, and its byte table says an end of turn request is wiped clean when
-  the game keeps the move's numbers in it. (Tech: FFTBattleBrain docs/SPIKE_FACTS.md lines 1561
-  to 1567, rider 0x80 and mount 0x40 per [unit-mount-byte-0x1b4]; line 296, the EndTurn column
-  of the byte correlation table, per [endturn-carried-move-bytes].)
+  the game keeps the move's numbers in it. The simulator's AI input list also calls the bytes
+  at +0x1EF the statuses put on this turn, when they hold every status a unit carries, and says
+  nobody knows where elements live, when the job row and the record now show it. (Tech:
+  FFTBattleBrain docs/SPIKE_FACTS.md lines 1561 to 1567, rider 0x80 and mount 0x40 per
+  [unit-mount-byte-0x1b4], held until MG-42 settles it; line 296, the EndTurn column of the
+  byte correlation table, per [endturn-carried-move-bytes]; sim branch
+  docs/research/ai_inputs_list_2026-11-13.txt sections D and G, per
+  [status-three-layer-bitfields] and [unit-element-bytes-0x76].)
 - [MG-35] 2026-11-12: Living Weapons' own ledger carries mistakes the shared fact list has
   fixed, and Living Weapons' session must fix them in its own files, since the keeper never
   edits another repo; Patrick passes the list on. Owed so far: one paragraph still gives the old
@@ -74,6 +86,24 @@ gate lives in docs/RELEASE_SCOPE.md.
   invisible-status-steers-ai-targeting, 2026-07-22; table-xml-whole-row-writeback,
   2026-07-14, the modloader's own behaviour. ct-scheduler-adopts-band-slot, flipped
   2026-11-12 though both its sightings are from 2026-06-16, went back to UNCERTAIN.)
+- [MG-40] 2026-11-13: Some of the AI's inputs can only be confirmed by doing something in the
+  game, so they wait for Patrick's go ahead: Golem's party shield, Reflect and Transparent on a
+  unit, whether the AI checks the item stock before using an item, enemy AI settings in a story
+  battle, and an elemental hit on a weak or absorbing unit. (Tech: the plans are in the MG-39
+  report; rows [unit-record-ai-setting-bytes], [auto-battle-ai-throws-items] and
+  [unit-element-bytes-0x76]; Reflect is status id 38 and Transparent id 19, and Golem has no
+  row yet; none of the five shows on any recording.)
+- [MG-41] 2026-11-13: The fact list's contract test still lets a row say "keeper verified",
+  though Patrick's rule of 2026-11-13 retired the keeper's solo flip; make it refuse that
+  marker. (Tech: the Agreed regex and the keeper verified branch in
+  Tests/GameFactsContractTests.cs; the test ships to every repo in the rulebook, so it takes a
+  rulebook bump.)
+- [MG-42] 2026-11-13: Two rows clash with what the recordings show, and Patrick decides each. A
+  chocobo and Ramza paired at a battle's start carried the rider and mount bits the other way
+  round while the screen drew Ramza riding, and a poison count read 0 after 118 of 120 endings
+  where an older row says it stays standing. (Tech: [mount-roles-reversed-in-start-pair]
+  against [unit-mount-byte-0x1b4]; [poison-bit-and-timer], "leaves standing after the poison
+  ends", from Living Weapons on a build before 1.5.)
 
 ## Walled (blocked by engine / external)
 
