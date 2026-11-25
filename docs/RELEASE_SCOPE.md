@@ -22,3 +22,7 @@ One list of game facts every mod reads. It ships when docs/GAME_FACTS.md holds t
 Battle Brain's research journal and Living Weapons' live ledger and self test plan, each with its
 mark, evidence and readers, the contract test holds every row's shape here and in every mod, the
 repo passes its own check, and the tag is cut. Tagged v0.3.0.
+
+On 2026-11-24 the list moved whole to its own repo, `prawl/FFTGameFacts`, and the rules that
+hold each fact's shape went with it. docs/GAME_FACTS.md here is a pointer now. What this release
+still has to ship is the owner's call.

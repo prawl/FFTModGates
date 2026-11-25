@@ -17,7 +17,7 @@ gate measures can get worse, and the copy itself cannot drift from what was publ
 | `Directory.Build.targets` | Warnings as errors and code style in the build | One import line |
 | `.editorconfig` | The code style the build enforces | A byte-for-byte copy at its root |
 | `MANIFEST.sha256` | A fingerprint per file, checked on every build | Nothing |
-| `docs/GAME_FACTS.md` | The game facts every mod reads, one row per fact with its mark, evidence and readers, its shape held by `Tests/GameFactsContractTests.cs` | Nothing. Its sessions send facts to the keeper session here, the file's one writer |
+| `docs/GAME_FACTS.md` | A pointer. The game facts every mod reads moved to their own repo, `prawl/FFTGameFacts`, together with the rules that hold each fact's shape | Nothing. Its sessions send facts to that repo's keeper session |
 
 `Selftest/` holds a stand-in mod library and a stand-in test project, so the package is compiled
 here exactly the way a mod compiles it and is held to the rules it enforces. `docs/merge/`

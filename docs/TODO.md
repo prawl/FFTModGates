@@ -22,6 +22,16 @@ gate lives in docs/RELEASE_SCOPE.md.
     [unit-record-ai-setting-bytes] marked CONTRADICTED.)
   - Verify: each row's addresses match a capstone read of the exe, the proofs sit in a cited file,
     and .\Check.ps1 is green.
+- **[MG-50] Send readers of the fact list to its new home** (opened 2026-11-24) [BUILDING]
+  - Done means: the game facts live in one place, their own repo, and the copy here is a short
+    pointer to it, so nobody adds a fact to the wrong list. The test that held the list's shape
+    leaves with it, since the same rules now run in the new repo. Patrick asked for the move on
+    2026-11-24. (Tech: docs/GAME_FACTS.md and Tests/GameFactsContractTests.cs; all 706 rows
+    moved, and printed back in the old table shape they match the old file from "## Facts" to
+    its end, sha256 40b9b65ecd7e2e543f1588f4a6cae16faca2766e0ba78eb0c34c6ea84ec2dd6c;
+    prawl/FFTGameFacts tools/rules.py carries the rules; the keeper's open cards here stay
+    until the owner says how they move.)
+  - Verify: .\Check.ps1 is green here, and the new repo's check passes on the same 706 facts.
 
 ## Backlog
 
