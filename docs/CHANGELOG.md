@@ -8,6 +8,16 @@ with a date and no hash.
 
 ## 0.3 cycle
 
+- [MG-50] SHIPPED ecb373b 2026-11-24: The game facts now live in one place, their own repo, and
+  the copy here is a short pointer to it, so nobody adds a fact to the wrong list. The test that
+  held the list's shape left with it, since the same rules now run in the new repo. Patrick asked
+  for the move on 2026-11-24. The keeper's open cards stay here until the owner says how they
+  move. (Tech: docs/GAME_FACTS.md and Tests/GameFactsContractTests.cs; all 706 rows moved to
+  prawl/FFTGameFacts, and printed back in the old table shape they match the old file from
+  "## Facts" to its end, sha256
+  40b9b65ecd7e2e543f1588f4a6cae16faca2766e0ba78eb0c34c6ea84ec2dd6c; its tools/rules.py carries
+  the rules.)
+
 - [MG-47] SHIPPED 9a38211 2026-11-13: Seventeen of the simulator's 24 questions now have
   answers from the game's own code and tables, read only. Manafont gives back a tenth of max MP,
   rounded up, after a move. Counter Tackle only rushes a striker inside Rush's reach. Parry lets a
