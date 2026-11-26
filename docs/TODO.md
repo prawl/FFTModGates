@@ -108,6 +108,19 @@ gate lives in docs/RELEASE_SCOPE.md.
   reactions do, and a unit's own act on itself against Blade Grasp. Read them the same way, read
   only. (Tech: G4, G5, G7, G8, G13, G14's unread reactions and G17a's third point in FFTBattleBrain
   sim worktree docs/research/sim_mechanics_unknowns_2026-11-13.txt at dd80021.)
+- [MG-51] 2026-11-26: A session that once handed off its launch folder's own note by mistake
+  keeps getting that note back after each clear, and nothing notices, even when the note is
+  another session's. The handoff skill's own note branch only fires on a mark elsewhere, a
+  printed path or the launch prompt's sentence, and a wrong mark on the folder's note shows
+  none of them. Duet's note 572: logged, no hook change now. (Tech: handoff_load.py marked()
+  trusts any mark of this Claude Code process; the first blind review of the skill fix
+  c1c3f4a found such a mark at hooks/handoff.log line 1793; a fix needs the hook to tell two
+  sessions in one folder apart.)
+- [MG-52] 2026-11-26: A session whose handoff note lives outside its launch folder is never
+  held to the project's own handoff lines, a STOP line among them, so those lines bind it by
+  instruction only. Duet's note 572: logged, no hook change now. (Tech: handoff_self.sh reads
+  handoff_lines.md only in the checked note's own folder; skills/handoff/SKILL.md step 2 says
+  so since c1c3f4a; both blind reviews of that change named it.)
 
 ## Walled (blocked by engine / external)
 
